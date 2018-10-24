@@ -81,12 +81,12 @@ float calculateDistance(float point1[NUMBER_OF_VALUES], float point2[NUMBER_OF_V
     return distance;
 }
 
-void calculateCenterOfGravity(float dataArray[][NUMBER_OF_VALUES], int rowNumber, float centerOfGravity[3])
+void calculateCenterOfGravity(float dataArray[][NUMBER_OF_VALUES], int numOfRows, float centerOfGravity[3])
 {
 	float xSum, ySum, zSum;
 	int i;
 
-	if (rowNumber == 0)
+	if (numOfRows == 0)
 	{
 		centerOfGravity[0] = 0;
 		centerOfGravity[1] = 0;
@@ -100,16 +100,16 @@ void calculateCenterOfGravity(float dataArray[][NUMBER_OF_VALUES], int rowNumber
 
 
 
-	for(i = 0; i < rowNumber; i++)
+	for(i = 0; i < numOfRows; i++)
 	{
 		xSum += dataArray[i][0];
 		ySum += dataArray[i][1];
 		zSum += dataArray[i][2];
 	}
 
-	centerOfGravity[0] = xSum / rowNumber;
-	centerOfGravity[1] = ySum / rowNumber;
-	centerOfGravity[2] = zSum / rowNumber;
+	centerOfGravity[0] = xSum / numOfRows;
+	centerOfGravity[1] = ySum / numOfRows;
+	centerOfGravity[2] = zSum / numOfRows;
 }
 
 float calculateTurnRadius(float dataArray[][NUMBER_OF_VALUES], int numOfRows, float centerOfGravity[NUMBER_OF_VALUES])
@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 	char* dataFilePath;
 	FILE* file;
 	int ret;
-	int rowNumber;
+	int numOfRows;
 	float centerOfGravity[3];
 	float turnRadius;
 	float maxDistance;
@@ -188,17 +188,17 @@ int main(int argc, char *argv[])
 			return -ret;
 		}
 
-		rowNumber = ret;
+		numOfRows = ret;
 
-		printf("PDB FILE %s, %d atoms were read\n", dataFilePath, rowNumber);
+		printf("PDB FILE %s, %d atoms were read\n", dataFilePath, numOfRows);
 
-		calculateCenterOfGravity(dataArray, rowNumber, centerOfGravity);
+		calculateCenterOfGravity(dataArray, numOfRows, centerOfGravity);
 		printf("Cg = %.3f %.3f %.3f\n", centerOfGravity[0], centerOfGravity[1], centerOfGravity[2]);
 
-		turnRadius = calculateTurnRadius(dataArray, rowNumber, centerOfGravity);
+		turnRadius = calculateTurnRadius(dataArray, numOfRows, centerOfGravity);
 		printf("Rg = %.3f\n", turnRadius);
 
-		maxDistance = calculateMaxDistance(dataArray, rowNumber);
+		maxDistance = calculateMaxDistance(dataArray, numOfRows);
 		printf("Dmax = %.3f\n", maxDistance);
 	}
 	return 0;
