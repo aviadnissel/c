@@ -8,34 +8,34 @@
 #define INVALID_VALUE -1
 
 #define MAX_ROWS 20000
-#define MAX_LINE_SIZE 80
+#define MAX_LINE_SIZE 200
 #define NUMBER_OF_VALUES 3 // TODO Rename
 
 #define ROW_START "ATOM"
 
 #define X_VALUE_START 31
-#define X_VALUE_END 38
 #define Y_VALUE_START 39
-#define Y_VALUE_END 46
 #define Z_VALUE_START 47
-#define Z_VALUE_END 54
+#define VALUES_END 54
+#define VALUE_LENGTH 8
 
-float parseValue(char* line, int valueStart, int valueEnd)
+float parseValue(char* line, int valueStart, int valueLength)
 {
-	return strtof(line + valueStart, &line + valueEnd);
+	char tempString[valueLength];
+	strncpy(tempString, line + valueStart, valueLength);;
+	return strtof(tempString, NULL);
 }
 
 int readValues(FILE* file, float dataArray[][NUMBER_OF_VALUES], int maxSize)
 {
 	char line[MAX_LINE_SIZE];
-	size_t len = 0;
 	float xValue, yValue, zValue;
 	int curLine = 0;
 
-	
-	while(fgets (line, MAX_LINE_SIZE, file) != NULL && curLine < maxSize)
+    while(fgets(line, MAX_LINE_SIZE, file) != NULL && curLine < maxSize)
 	{
-		if(len < Z_VALUE_END)
+
+		if(strlen(line) < VALUES_END)
 		{
 			// Not enough data in row
 			continue;
@@ -45,17 +45,17 @@ int readValues(FILE* file, float dataArray[][NUMBER_OF_VALUES], int maxSize)
 			// Row doesn't start with the right word
 			continue;
 		}
-		xValue = parseValue(line, X_VALUE_START, X_VALUE_END);
+		xValue = parseValue(line, X_VALUE_START, VALUE_LENGTH);
 		if (xValue == 0 && errno != 0)
 		{
 			return INVALID_VALUE;
 		}
-		yValue = parseValue(line, Y_VALUE_START, Y_VALUE_END);
+		yValue = parseValue(line, Y_VALUE_START, VALUE_LENGTH);
 		if (yValue == 0 && errno != 0)
 		{
 			return INVALID_VALUE;
 		}
-		zValue = parseValue(line, Z_VALUE_START, Z_VALUE_END);
+		zValue = parseValue(line, Z_VALUE_START, VALUE_LENGTH);
 		if (zValue == 0 && errno != 0)
 		{
 			return INVALID_VALUE;
@@ -65,6 +65,7 @@ int readValues(FILE* file, float dataArray[][NUMBER_OF_VALUES], int maxSize)
 		dataArray[curLine][2] = zValue;
 		curLine++;
 	}
+
 	return curLine;
 	
 }
@@ -97,17 +98,15 @@ void calculateCenterOfGravity(float dataArray[][NUMBER_OF_VALUES], int rowNumber
 	ySum = 0;
 	zSum = 0;
 
-	
+
+
 	for(i = 0; i < rowNumber; i++)
 	{
 		xSum += dataArray[i][0];
 		ySum += dataArray[i][1];
 		zSum += dataArray[i][2];
-		if(xSum > 1000) {
-			printf("%d %.3f %.3f %.3f\n", i, xSum, ySum, zSum);
-			return;
-		}
 	}
+
 	centerOfGravity[0] = xSum / rowNumber;
 	centerOfGravity[1] = ySum / rowNumber;
 	centerOfGravity[2] = zSum / rowNumber;

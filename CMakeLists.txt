@@ -4,5 +4,5 @@ project(c C)
 set(CMAKE_C_STANDARD 11)
 
 add_executable(c
-        ex1/ex1.c
+        ex1/AnalyzeProtein.c
         )
