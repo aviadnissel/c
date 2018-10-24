@@ -19,10 +19,10 @@
 #define VALUES_END 54
 #define VALUE_LENGTH 8
 
-float parseValue(char* line, int valueStart, int valueLength)
+float parseValue(char* line, int valueStart)
 {
-	char tempString[valueLength];
-	strncpy(tempString, line + valueStart, valueLength);
+	char tempString[VALUE_LENGTH];
+	strncpy(tempString, line + valueStart, VALUE_LENGTH);
 	return strtof(tempString, NULL);
 }
 
@@ -45,17 +45,17 @@ int readValues(FILE* file, float dataArray[][NUMBER_OF_VALUES], int maxSize)
 			// Row doesn't start with the right word
 			continue;
 		}
-		xValue = parseValue(line, X_VALUE_START, VALUE_LENGTH);
+		xValue = parseValue(line, X_VALUE_START);
 		if (xValue == 0 && errno != 0)
 		{
 			return INVALID_VALUE;
 		}
-		yValue = parseValue(line, Y_VALUE_START, VALUE_LENGTH);
+		yValue = parseValue(line, Y_VALUE_START);
 		if (yValue == 0 && errno != 0)
 		{
 			return INVALID_VALUE;
 		}
-		zValue = parseValue(line, Z_VALUE_START, VALUE_LENGTH);
+		zValue = parseValue(line, Z_VALUE_START);
 		if (zValue == 0 && errno != 0)
 		{
 			return INVALID_VALUE;
