@@ -5,8 +5,7 @@
 #include <math.h>
 #include <libgen.h>
 
-#define OPEN_FILE_ERROR -1
-#define INVALID_VALUE -2
+#define INVALID_VALUE -1
 
 #define MAX_ROWS 20000
 #define NUMBER_OF_VALUES 3 // TODO Rename
@@ -29,20 +28,18 @@ int readValues(FILE* file, float dataArray[][NUMBER_OF_VALUES], int maxSize)
 {
 	char* line = NULL;
 	size_t len = 0;
-	ssize_t read;
-	int i;
 	float xValue, yValue, zValue;
 	int curLine = 0;
 
 	
-	while((read = getline(&line, &len, file)) != -1)
+	while(getline(&line, &len, file) != -1 && curLine < maxSize)
 	{
 		if(len < Z_VALUE_END)
 		{
 			// Not enough data in row
 			continue;
 		}
-		if(strncmp(line, ROW_START, sizeof(ROW_START) - 1))
+		if(strncmp(line, ROW_START, sizeof(ROW_START) - 1) != 0)
 		{
 			// Row doesn't start with the right word
 			continue;
@@ -75,10 +72,10 @@ float calculateDistance(float point1[NUMBER_OF_VALUES], float point2[NUMBER_OF_V
 {
     float distance;
     float xDistance, yDistance, zDistance;
-    xDistance = pow(point1[0] - point2[0], 2);
-    yDistance = pow(point1[1] - point2[1], 2);
-    zDistance = pow(point1[2] - point2[2], 2);
-    distance = sqrt(xDistance + yDistance + zDistance);
+    xDistance = powf(point1[0] - point2[0], 2);
+    yDistance = powf(point1[1] - point2[1], 2);
+    zDistance = powf(point1[2] - point2[2], 2);
+    distance = sqrtf(xDistance + yDistance + zDistance);
     return distance;
 }
 
@@ -130,7 +127,7 @@ float calculateTurnRadius(float dataArray[][NUMBER_OF_VALUES], int numOfRows, fl
 		distance = calculateDistance(dataArray[i], centerOfGravity);
 		sum += pow(distance, 2);
 	}
-	return sqrt(sum / numOfRows);
+	return sqrtf(sum / numOfRows);
 }
 
 int main(int argc, char *argv[])
