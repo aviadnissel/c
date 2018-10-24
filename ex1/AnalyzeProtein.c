@@ -8,6 +8,7 @@
 #define INVALID_VALUE -1
 
 #define MAX_ROWS 20000
+#define MAX_LINE_SIZE 80
 #define NUMBER_OF_VALUES 3 // TODO Rename
 
 #define ROW_START "ATOM"
@@ -26,13 +27,13 @@ float parseValue(char* line, int valueStart, int valueEnd)
 
 int readValues(FILE* file, float dataArray[][NUMBER_OF_VALUES], int maxSize)
 {
-	char* line = NULL;
+	char line[MAX_LINE_SIZE];
 	size_t len = 0;
 	float xValue, yValue, zValue;
 	int curLine = 0;
 
 	
-	while(getline(&line, &len, file) != -1 && curLine < maxSize)
+	while(fgets (line, MAX_LINE_SIZE, file) != NULL && curLine < maxSize)
 	{
 		if(len < Z_VALUE_END)
 		{
