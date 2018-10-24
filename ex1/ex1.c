@@ -71,6 +71,17 @@ int readValues(FILE* file, float dataArray[][NUMBER_OF_VALUES], int maxSize)
 	
 }
 
+float calculateDistance(float point1[NUMBER_OF_VALUES], float point2[NUMBER_OF_VALUES])
+{
+    float distance;
+    float xDistance, yDistance, zDistance;
+    xDistance = pow(point1[0] - point2[0], 2);
+    yDistance = pow(point1[1] - point2[1], 2);
+    zDistance = pow(point1[2] - point2[2], 2);
+    distance = sqrt(xDistance + yDistance + zDistance);
+    return distance;
+}
+
 void calculateCenterOfGravity(float dataArray[][NUMBER_OF_VALUES], int rowNumber, float centerOfGravity[3])
 {
 	float xSum, ySum, zSum;
@@ -120,16 +131,6 @@ float calculateTurnRadius(float dataArray[][NUMBER_OF_VALUES], int numOfRows, fl
 		sum += pow(distance, 2);
 	}
 	return sqrt(sum / numOfRows);
-}
-float calculateDistance(float point1[NUMBER_OF_VALUES], float point2[NUMBER_OF_VALUES])
-{
-	float distance;
-	float xDistance, yDistance, zDistance;
-	xDistance = pow(point1[0] - point2[0], 2);
-	yDistance = pow(point1[1] - point2[1], 2);
-	zDistance = pow(point1[2] - point2[2], 2);
-	distance = sqrt(xDistance + yDistance + zDistance);
-	return distance;
 }
 
 int main(int argc, char *argv[])
