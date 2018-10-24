@@ -22,7 +22,7 @@
 float parseValue(char* line, int valueStart, int valueLength)
 {
 	char tempString[valueLength];
-	strncpy(tempString, line + valueStart, valueLength);;
+	strncpy(tempString, line + valueStart, valueLength);
 	return strtof(tempString, NULL);
 }
 
