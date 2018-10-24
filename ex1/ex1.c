@@ -130,6 +130,26 @@ float calculateTurnRadius(float dataArray[][NUMBER_OF_VALUES], int numOfRows, fl
 	return sqrtf(sum / numOfRows);
 }
 
+float calculateMaxDistance(float dataArray[][NUMBER_OF_VALUES], int numOfRows)
+{
+	int i;
+	int j;
+	float distance;
+	float maxDistance = 0;
+
+	for(i = 0; i < numOfRows; i++)
+	{
+		for(j = i + 1; j < numOfRows; j++)
+		{
+			distance = calculateDistance(dataArray[i], dataArray[j]);
+			if (distance > maxDistance)
+			{
+				maxDistance = distance;
+			}
+		}
+	}
+	return maxDistance;
+}
 int main(int argc, char *argv[])
 {
 	// TODO Read data file from args
@@ -142,7 +162,7 @@ int main(int argc, char *argv[])
 	int rowNumber;
 	float centerOfGravity[3];
 	float turnRadius;
-	float maximalDistance;
+	float maxDistance;
 
 	if (argc < 2)
 	{
@@ -176,7 +196,10 @@ int main(int argc, char *argv[])
 		printf("Cg = %.3f %.3f %.3f\n", centerOfGravity[0], centerOfGravity[1], centerOfGravity[2]);
 
 		turnRadius = calculateTurnRadius(dataArray, rowNumber, centerOfGravity);
-		printf("Rg = %f\n", turnRadius);
+		printf("Rg = %.3f\n", turnRadius);
+
+		maxDistance = calculateMaxDistance(dataArray, rowNumber);
+		printf("Dmax = %.3f\n", maxDistance);
 	}
 	return 0;
 	
