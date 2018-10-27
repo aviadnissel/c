@@ -1,3 +1,14 @@
+/**
+ * @file AnalyzeProtein.c
+ * @author Aviad Nissel <aviad.nissel@mail.huji.ac.il>
+ * 
+ * This program reads protein atoms from a pdb file,
+ * calculates important values and prints them back. 
+ */
+
+
+/* --- Includes --- */
+
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -5,34 +16,85 @@
 #include <math.h>
 #include <libgen.h>
 
-#define INVALID_VALUE -1
 
+/* -- Constants --- */
+
+/** Maximum number of rows in the pdb file. */
 #define MAX_ROWS 20000
-#define MAX_LINE_SIZE 200
-#define NUMBER_OF_VALUES 3 // TODO Rename
 
+/** Maximum number of characters in a line. */
+#define MAX_LINE_SIZE 200
+
+/** How many coordinates are there (x, y, z). */
+#define COORD_NUM 3
+
+/** X coordinate position. */
+#define X_POS 0
+
+/** Y coordinate position. */
+#define Y_POS 1
+
+/** Z coordinate position. */
+#define Z_POS 2
+
+/** How every row that matters for calculations should start. */
 #define ROW_START "ATOM"
 
+/** Where the x value starts in the line. */
 #define X_VALUE_START 31
+
+/** Where the y value starts in the line. */
 #define Y_VALUE_START 39
+
+/** Where the z value starts in the line. */
 #define Z_VALUE_START 47
+
+/** Where the values end. */
 #define VALUES_END 54
+
+/** The number of characters in each value. */
 #define VALUE_LENGTH 8
 
+
+/* --- Functions --- */
+
+/**
+ * Parses a value of VALUE_LENGTH from given line.
+ * 
+ * @param line the line to parse from.
+ * @param valueStart the position of the value.
+ * @return The parsed value. In case of error, returns 0 and sets errno.
+ */
 float parseValue(char* line, int valueStart)
 {
+	char* endPtr;
 	char tempString[VALUE_LENGTH];
+	float value;
 	strncpy(tempString, line + valueStart, VALUE_LENGTH);
-	return strtof(tempString, NULL);
+	value = strtof(tempString, &endPtr);
+	if (endPtr == tempString)
+	{
+		errno = EINVAL;
+	}
+	return value;
 }
 
-int readValues(FILE* file, float dataArray[][NUMBER_OF_VALUES], int maxSize)
+/**
+ * Reads the values from the given file into the given array.
+ * 
+ * @param file the file to read from.
+ * @param dataArray the output array.
+ * @param maxLines the maximum number of lines to read.
+ * @return positive integer - how many lines were read.
+ *         negative integer - an error code.
+ */
+int readValues(FILE* file, float dataArray[][COORD_NUM], int maxLines)
 {
 	char line[MAX_LINE_SIZE];
 	float xValue, yValue, zValue;
 	int curLine = 0;
 
-    while(fgets(line, MAX_LINE_SIZE, file) != NULL && curLine < maxSize)
+	while(fgets(line, MAX_LINE_SIZE, file) != NULL && curLine < maxLines)
 	{
 
 		if(strlen(line) < VALUES_END)
@@ -48,21 +110,21 @@ int readValues(FILE* file, float dataArray[][NUMBER_OF_VALUES], int maxSize)
 		xValue = parseValue(line, X_VALUE_START);
 		if (xValue == 0 && errno != 0)
 		{
-			return INVALID_VALUE;
+			return -errno;
 		}
 		yValue = parseValue(line, Y_VALUE_START);
 		if (yValue == 0 && errno != 0)
 		{
-			return INVALID_VALUE;
+			return -errno;
 		}
 		zValue = parseValue(line, Z_VALUE_START);
 		if (zValue == 0 && errno != 0)
 		{
-			return INVALID_VALUE;
+			return -errno;
 		}
-		dataArray[curLine][0] = xValue; // TODO Constant for x, y, z cells
-		dataArray[curLine][1] = yValue;
-		dataArray[curLine][2] = zValue;
+		dataArray[curLine][X_POS] = xValue;
+		dataArray[curLine][Y_POS] = yValue;
+		dataArray[curLine][Z_POS] = zValue;
 		curLine++;
 	}
 
@@ -70,27 +132,41 @@ int readValues(FILE* file, float dataArray[][NUMBER_OF_VALUES], int maxSize)
 	
 }
 
-float calculateDistance(float point1[NUMBER_OF_VALUES], float point2[NUMBER_OF_VALUES])
+/**
+ * Calculates the distance between two give points.
+ * 
+ * @param point1 the first point.
+ * @param point2 the second point.
+ * @return The distance between the points.
+ */
+float calculateDistance(float point1[COORD_NUM], float point2[COORD_NUM])
 {
-    float distance;
-    float xDistance, yDistance, zDistance;
-    xDistance = powf(point1[0] - point2[0], 2);
-    yDistance = powf(point1[1] - point2[1], 2);
-    zDistance = powf(point1[2] - point2[2], 2);
-    distance = sqrtf(xDistance + yDistance + zDistance);
-    return distance;
+	float distance;
+	float xDistance, yDistance, zDistance;
+	xDistance = powf(point1[X_POS] - point2[X_POS], 2);
+	yDistance = powf(point1[Y_POS] - point2[Y_POS], 2);
+	zDistance = powf(point1[Z_POS] - point2[Z_POS], 2);
+	distance = sqrtf(xDistance + yDistance + zDistance);
+	return distance;
 }
 
-void calculateCenterOfGravity(float dataArray[][NUMBER_OF_VALUES], int numOfRows, float centerOfGravity[3])
+/**
+ * Calcualtes the center of gravity of the given points.
+ *
+ * @param dataArray an array of points, each represented as (x, y, z).
+ * @param numOfPoints how many points are in the given array.
+ * @param centerOfGravity the output array, representing (x, y, z).
+ */
+void calculateCenterOfGravity(float dataArray[][COORD_NUM], int numOfPoints, float centerOfGravity[3])
 {
 	float xSum, ySum, zSum;
 	int i;
 
-	if (numOfRows == 0)
+	if (numOfPoints == 0)
 	{
-		centerOfGravity[0] = 0;
-		centerOfGravity[1] = 0;
-		centerOfGravity[2] = 0;
+		centerOfGravity[X_POS] = 0;
+		centerOfGravity[Y_POS] = 0;
+		centerOfGravity[Z_POS] = 0;
 		return;
 	}
 
@@ -100,37 +176,52 @@ void calculateCenterOfGravity(float dataArray[][NUMBER_OF_VALUES], int numOfRows
 
 
 
-	for(i = 0; i < numOfRows; i++)
+	for(i = 0; i < numOfPoints; i++)
 	{
-		xSum += dataArray[i][0];
-		ySum += dataArray[i][1];
-		zSum += dataArray[i][2];
+		xSum += dataArray[i][X_POS];
+		ySum += dataArray[i][Y_POS];
+		zSum += dataArray[i][Z_POS];
 	}
 
-	centerOfGravity[0] = xSum / numOfRows;
-	centerOfGravity[1] = ySum / numOfRows;
-	centerOfGravity[2] = zSum / numOfRows;
+	centerOfGravity[X_POS] = xSum / numOfPoints;
+	centerOfGravity[Y_POS] = ySum / numOfPoints;
+	centerOfGravity[Z_POS] = zSum / numOfPoints;
 }
 
-float calculateTurnRadius(float dataArray[][NUMBER_OF_VALUES], int numOfRows, float centerOfGravity[NUMBER_OF_VALUES])
+/**
+ * Calcualtes the turn radius of the given points.
+ *
+ * @param dataArray an array of points, each represented as (x, y, z).
+ * @param numOfPoints how many points are in the given array.
+ * @param centerOfGravity the center of gravity of the points.
+ * @return The turn radius.
+ */
+float calculateTurnRadius(float dataArray[][COORD_NUM], int numOfPoints, float centerOfGravity[COORD_NUM])
 {
 	float sum = 0;
 	float distance;
 	int i;
 
-	if (numOfRows == 0)
+	if (numOfPoints == 0)
 	{
 		return 0;
 	}
-	for(i = 0; i < numOfRows; i++)
+	for(i = 0; i < numOfPoints; i++)
 	{
 		distance = calculateDistance(dataArray[i], centerOfGravity);
 		sum += pow(distance, 2);
 	}
-	return sqrtf(sum / numOfRows);
+	return sqrtf(sum / numOfPoints);
 }
 
-float calculateMaxDistance(float dataArray[][NUMBER_OF_VALUES], int numOfRows)
+/**
+ * Calcualtes the maximum distance between all given points.
+ *
+ * @param dataArray an array of points, each represented as (x, y, z).
+ * @param numOfPoints how many points are in the given array.
+ * @return The maxium distance between the points.
+ */
+float calculateMaxDistance(float dataArray[][COORD_NUM], int numOfRows)
 {
 	int i;
 	int j;
@@ -150,12 +241,22 @@ float calculateMaxDistance(float dataArray[][NUMBER_OF_VALUES], int numOfRows)
 	}
 	return maxDistance;
 }
+
+
+/* --- Main --- */
+
+/**
+ * The main function.
+ *
+ * @param argc the number of arguments.
+ * @param argv An array of strings, the arguments of the program.
+ * @return 0 in a succesful execution, 1 in case of file error, 
+ *        other in case of a different error.
+ */
 int main(int argc, char *argv[])
 {
-	// TODO Read data file from args
-	// TODO Allow more than one data file
 	int i;
-	float dataArray[MAX_ROWS][NUMBER_OF_VALUES];
+	float dataArray[MAX_ROWS][COORD_NUM];
 	char* dataFilePath;
 	FILE* file;
 	int ret;
@@ -184,7 +285,7 @@ int main(int argc, char *argv[])
 
 		if (ret < 0)
 		{
-			// TODO Error handling and usage
+			fprintf(stderr, "Error while parsing file: %d\n", -ret);
 			return -ret;
 		}
 
@@ -193,7 +294,7 @@ int main(int argc, char *argv[])
 		printf("PDB FILE %s, %d atoms were read\n", dataFilePath, numOfRows);
 
 		calculateCenterOfGravity(dataArray, numOfRows, centerOfGravity);
-		printf("Cg = %.3f %.3f %.3f\n", centerOfGravity[0], centerOfGravity[1], centerOfGravity[2]);
+		printf("Cg = %.3f %.3f %.3f\n", centerOfGravity[X_POS], centerOfGravity[Y_POS], centerOfGravity[Z_POS]);
 
 		turnRadius = calculateTurnRadius(dataArray, numOfRows, centerOfGravity);
 		printf("Rg = %.3f\n", turnRadius);
