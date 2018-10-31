@@ -61,6 +61,7 @@
 /** An error number if the line is too short. */
 #define ERRSHORT -1;
 
+
 /* --- Functions --- */
 
 /**
