@@ -38,23 +38,28 @@
 #define Z_POS 2
 
 /** How every row that matters for calculations should start. */
-#define ROW_START "ATOM"
+#define ROW_START "ATOM  "
 
 /** Where the x value starts in the line. */
-#define X_VALUE_START 31
+#define X_VALUE_START 30
 
 /** Where the y value starts in the line. */
-#define Y_VALUE_START 39
+#define Y_VALUE_START 38
 
 /** Where the z value starts in the line. */
-#define Z_VALUE_START 47
+#define Z_VALUE_START 46
 
 /** Where the values end. */
-#define VALUES_END 54
+#define VALUES_END 53
+
+/** Minimum line length. */
+#define MINIMUM_LINE_LENGTH 61
 
 /** The number of characters in each value. */
 #define VALUE_LENGTH 8
 
+/** An error number if the line is too short. */
+#define ERRSHORT -1;
 
 /* --- Functions --- */
 
@@ -68,13 +73,15 @@
 float parseValue(char* line, int valueStart)
 {
 	char* endPtr;
-	char tempString[VALUE_LENGTH];
+	char tempString[VALUE_LENGTH + 1];
 	float value;
+	memset(tempString, '\0', VALUE_LENGTH);
 	strncpy(tempString, line + valueStart, VALUE_LENGTH);
 	value = strtof(tempString, &endPtr);
 	if (endPtr == tempString)
 	{
-		errno = EINVAL;
+		errno = EINVAL; 
+		fprintf(stderr, "Error in coordinate conversion %s!\n", tempString);
 	}
 	return value;
 }
@@ -97,15 +104,15 @@ int readValues(FILE* file, float dataArray[][COORD_NUM], int maxLines)
 	while(fgets(line, MAX_LINE_SIZE, file) != NULL && curLine < maxLines)
 	{
 
-		if(strlen(line) < VALUES_END)
-		{
-			// Not enough data in row
-			continue;
-		}
 		if(strncmp(line, ROW_START, sizeof(ROW_START) - 1) != 0)
 		{
 			// Row doesn't start with the right word
 			continue;
+		}
+		if(strlen(line) < MINIMUM_LINE_LENGTH)
+		{
+			fprintf(stderr, "ATOM line is too short %ld characters\n", strlen(line));
+			return ERRSHORT;
 		}
 		xValue = parseValue(line, X_VALUE_START);
 		if (xValue == 0 && errno != 0)
@@ -164,17 +171,15 @@ void calculateCenterOfGravity(float dataArray[][COORD_NUM], int numOfPoints, flo
 
 	if (numOfPoints == 0)
 	{
-		centerOfGravity[X_POS] = 0;
-		centerOfGravity[Y_POS] = 0;
-		centerOfGravity[Z_POS] = 0;
+		centerOfGravity[X_POS] = 0.0f;
+		centerOfGravity[Y_POS] = 0.0f;
+		centerOfGravity[Z_POS] = 0.0f;
 		return;
 	}
 
-	xSum = 0;
-	ySum = 0;
-	zSum = 0;
-
-
+	xSum = 0.0f;
+	ySum = 0.0f;
+	zSum = 0.0f;
 
 	for(i = 0; i < numOfPoints; i++)
 	{
@@ -278,20 +283,24 @@ int main(int argc, char *argv[])
 		if(!file)
 		{
 			fprintf(stderr, "Error opening file: %s\n", dataFilePath);
-			return 1;
+			return errno;
 		}
 
 		ret = readValues(file, dataArray, MAX_ROWS);
 
 		if (ret < 0)
 		{
-			fprintf(stderr, "Error while parsing file: %d\n", -ret);
 			return -ret;
+		}
+		if (ret == 0)
+		{
+			fprintf(stderr, "Error - 0 atoms were found in the file %s\n", dataFilePath);
+			return 1;
 		}
 
 		numOfRows = ret;
 
-		printf("PDB FILE %s, %d atoms were read\n", dataFilePath, numOfRows);
+		printf("PDB file %s, %d atoms were read\n", dataFilePath, numOfRows);
 
 		calculateCenterOfGravity(dataArray, numOfRows, centerOfGravity);
 		printf("Cg = %.3f %.3f %.3f\n", centerOfGravity[X_POS], centerOfGravity[Y_POS], centerOfGravity[Z_POS]);
