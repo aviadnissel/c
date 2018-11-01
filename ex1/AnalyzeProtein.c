@@ -289,6 +289,8 @@ int main(int argc, char *argv[])
 
 		ret = readValues(file, dataArray, MAX_ROWS);
 
+		fclose(file);
+
 		if (ret < 0)
 		{
 			return -ret;
