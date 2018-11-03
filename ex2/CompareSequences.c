@@ -142,7 +142,6 @@ int main() {
     int str2Len;
 
     struct Cell** scoreTable;
-    int cellValue;
 
     int i, j;
 
@@ -177,5 +176,5 @@ int main() {
 
     printf("Score for alignment of sequence %s to sequence %s is %d\n", seq1Name, seq2Name, scoreTable[str1Len][str2Len].value);
 
-    cleanup(scoreTable, str2Len);
+    cleanup(scoreTable, str2Len + 1);
 }
