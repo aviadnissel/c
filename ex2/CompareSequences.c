@@ -141,36 +141,41 @@ int main() {
     int str1Len;
     int str2Len;
 
+    int rows;
+    int columns;
+
     struct Cell** scoreTable;
 
     int i, j;
 
     // TODO put a loop over all combinations
     str1Len = strlen(str1);
+    rows = str1Len + 1;
     str2Len = strlen(str2);
+    columns = str2Len + 2;
 
     // TODO move to function
-    scoreTable = malloc(sizeof(struct Cell*) * (str1Len + 1)); // TODO make sizeof a var?
+    scoreTable = malloc(sizeof(struct Cell*) * rows); // TODO make sizeof a var?
     if(!scoreTable)
     {
-        cleanup(scoreTable, str1Len + 1);
+        cleanup(scoreTable, rows);
         return 1;
     }
-    for(i = 0; i < str1Len + 1; i++)
+    for(i = 0; i < rows; i++)
     {
-        scoreTable[i] = malloc(sizeof(struct Cell) * (str2Len + 1));
+        scoreTable[i] = malloc(sizeof(struct Cell) * columns);
         if(!scoreTable[i])
         {
-            cleanup(scoreTable, str1Len + 1);
+            cleanup(scoreTable, rows);
             return 1;
         }
-        for(j = 0; j < str2Len + 1; j++)
+        for(j = 0; j < columns; j++)
         {
             scoreTable[i][j].isInitialized = 0;
         }
     }
 
-    initializeTable(gapScore, scoreTable, str1Len + 1, str2Len + 1);
+    initializeTable(gapScore, scoreTable, rows, columns);
 
     calculateValue(str1, str2, scoreTable, str1Len - 1, str2Len - 1, matchScore, mismatchScore, gapScore);
 
