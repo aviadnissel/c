@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <libgen.h>
+#include <errno.h>
+
+#define MAX_LINE_SIZE 200
 
 struct Cell
 {
@@ -10,6 +14,11 @@ struct Cell
     int isInitialized;
 };
 
+struct Sequence
+{
+    char* name;
+    char* sequence;
+};
 
 void cleanup(struct Cell** table, int rows)
 {
@@ -128,12 +137,45 @@ void calculateValue(char* str1, char* str2, struct Cell** table,
     table[tableRow][tableColumn].isInitialized = 1;
 }
 
-int main() {
-    // TODO All of these should be inputs
-    char* str1 = "GCATGCU";
-    char* str2 = "GATTACA";
-    char* seq1Name = "seq1";
-    char* seq2Name = "seq2";
+int readSequences(FILE* file, struct Sequence** sequencesPtr)
+{
+    struct Sequence* sequences = NULL;
+    char line[MAX_LINE_SIZE];
+    int sequencesNumber;
+    char* sequenceName = NULL;
+    char* sequenceString = NULL;
+
+    sequencesNumber = 0;
+    while(fgets(line, MAX_LINE_SIZE, file) != NULL)
+    {
+        if (line[0] == '>')
+        {
+            if(!sequences)
+            {
+                sequences = malloc()
+            }
+            sequenceName = line;
+            sequenceString = NULL;
+        }
+        else
+        {
+            if (!sequenceString)
+            {
+                sequenceString
+            }
+        }
+    }
+}
+
+int main(int argc, char *argv[]) {
+
+    FILE* file;
+    char line[MAX_LINE_SIZE];
+    struct Sequence* sequences;
+
+    struct Sequence seq1;
+    struct Sequence seq2;
+
     int matchScore = 1;
     int mismatchScore = -1;
     int gapScore = -1;
@@ -147,6 +189,23 @@ int main() {
     struct Cell** scoreTable;
 
     int i, j;
+
+    if (argc != 5)
+    {
+        fprintf(stderr, "Usage: %s <path_to_sequences_file> <m> <s> <g>\n", basename(argv[0]));
+        exit(1);
+    }
+
+    file = fopen(argv[1], "r");
+
+    if(!file)
+    {
+        fprintf(stderr, "Error opening file: %s\n", argv[1]);
+        return errno;
+    }
+
+    // TODO Get m, s, g from argv
+    sequences = readSequences(file);
 
     // TODO put a loop over all combinations
     str1Len = strlen(str1);
