@@ -142,29 +142,57 @@ int readSequences(FILE* file, struct Sequence** sequencesPtr)
     struct Sequence* sequences = NULL;
     char line[MAX_LINE_SIZE];
     int sequencesNumber;
-    char* sequenceName = NULL;
+    char *newlineIndex;
     char* sequenceString = NULL;
+    struct Sequence *newSequence;
+
+    // TODO Check malloc/realloc results
 
     sequencesNumber = 0;
     while(fgets(line, MAX_LINE_SIZE, file) != NULL)
     {
+        if ((newlineIndex = strchr(line, '\r')) != NULL)
+        {
+            *newlineIndex = '\0';
+        }
+        if ((newlineIndex = strchr(line, '\n')) != NULL)
+        {
+            *newlineIndex = '\0';
+        }
         if (line[0] == '>')
         {
             if(!sequences)
             {
-                sequences = malloc()
+                sequences = malloc(sizeof(struct Sequence)); // TODO const
             }
-            sequenceName = line;
+            else
+            {
+                sequences = realloc(sequences, sizeof(sequences) + sizeof(struct Sequence));
+            }
+            newSequence = malloc(sizeof(struct Sequence));
+            newSequence->name = malloc(strlen(line));
+            strcpy(newSequence->name, line + 1);
+
+            newSequence->sequence = sequenceString;
+            sequences[sequencesNumber] = *newSequence;
             sequenceString = NULL;
+            sequencesNumber++;
         }
         else
         {
             if (!sequenceString)
             {
-                sequenceString
+                sequenceString = line;
+            }
+            else
+            {
+                sequenceString = realloc(sequenceString, strlen(sequenceString) + strlen(line) + 1);
+                strcat(sequenceString, line);
             }
         }
     }
+    *sequencesPtr = sequences;
+    return sequencesNumber;
 }
 
 int main(int argc, char *argv[]) {
@@ -172,9 +200,10 @@ int main(int argc, char *argv[]) {
     FILE* file;
     char line[MAX_LINE_SIZE];
     struct Sequence* sequences;
+    int sequencesNumber;
 
-    struct Sequence seq1;
-    struct Sequence seq2;
+    char* str1;
+    char* str2;
 
     int matchScore = 1;
     int mismatchScore = -1;
@@ -205,40 +234,49 @@ int main(int argc, char *argv[]) {
     }
 
     // TODO Get m, s, g from argv
-    sequences = readSequences(file);
+    sequencesNumber = readSequences(file, &sequences);
 
-    // TODO put a loop over all combinations
-    str1Len = strlen(str1);
-    rows = str1Len + 1;
-    str2Len = strlen(str2);
-    columns = str2Len + 2;
-
-    // TODO move to function
-    scoreTable = malloc(sizeof(struct Cell*) * rows); // TODO make sizeof a var?
-    if(!scoreTable)
+    for(i = 0; i < sequencesNumber; i++)
     {
-        cleanup(scoreTable, rows);
-        return 1;
-    }
-    for(i = 0; i < rows; i++)
-    {
-        scoreTable[i] = malloc(sizeof(struct Cell) * columns);
-        if(!scoreTable[i])
+        for(j = i + 1; j < sequencesNumber; j++)
         {
-            cleanup(scoreTable, rows);
-            return 1;
-        }
-        for(j = 0; j < columns; j++)
-        {
-            scoreTable[i][j].isInitialized = 0;
+            str1 = sequences[i].sequence;
+            str2 = sequences[j].sequence;
+            // TODO put a loop over all combinations
+            str1Len = strlen(str1);
+            rows = str1Len + 1;
+            str2Len = strlen(str2);
+            columns = str2Len + 2;
+
+            // TODO move to function
+            scoreTable = malloc(sizeof(struct Cell*) * rows); // TODO make sizeof a var?
+            if(!scoreTable)
+            {
+                cleanup(scoreTable, rows);
+                return 1;
+            }
+            for(i = 0; i < rows; i++)
+            {
+                scoreTable[i] = malloc(sizeof(struct Cell) * columns);
+                if(!scoreTable[i])
+                {
+                    cleanup(scoreTable, rows);
+                    return 1;
+                }
+                for(j = 0; j < columns; j++)
+                {
+                    scoreTable[i][j].isInitialized = 0;
+                }
+            }
+
+            initializeTable(gapScore, scoreTable, rows, columns);
+
+            calculateValue(str1, str2, scoreTable, str1Len - 1, str2Len - 1, matchScore, mismatchScore, gapScore);
+
+            printf("Score for alignment of sequence %s to sequence %s is %d\n", sequences[i].name, sequences[j].name, scoreTable[str1Len][str2Len].value);
+
+            cleanup(scoreTable, str2Len + 1);
         }
     }
 
-    initializeTable(gapScore, scoreTable, rows, columns);
-
-    calculateValue(str1, str2, scoreTable, str1Len - 1, str2Len - 1, matchScore, mismatchScore, gapScore);
-
-    printf("Score for alignment of sequence %s to sequence %s is %d\n", seq1Name, seq2Name, scoreTable[str1Len][str2Len].value);
-
-    cleanup(scoreTable, str2Len + 1);
 }
