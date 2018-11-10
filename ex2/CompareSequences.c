@@ -320,5 +320,6 @@ int main(int argc, char *argv[]) {
             cleanup(scoreTable, str2Len + 1);
         }
     }
+    free(sequences);
 
 }
