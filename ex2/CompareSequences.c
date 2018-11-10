@@ -144,7 +144,7 @@ int readSequences(FILE* file, struct Sequence** sequencesPtr)
                 sequences[sequencesNumber - 1].sequence = malloc(sizeof(sequenceString));
                 strcpy(sequences[sequencesNumber - 1].sequence, sequenceString);
                 free(sequenceString);
-                newSequences = realloc(sequences, sizeof(struct Sequence) * (sequencesNumber + 1););
+                newSequences = realloc(sequences, sizeof(struct Sequence) * (sequencesNumber + 1));
                 if (!newSequences)
                 {
                     // TODO What now?
