@@ -8,9 +8,8 @@
 
 struct Cell
 {
-    int value;
-    int prevCellRow; // TODO coordinates or pointer?
-    int prevCellColumn;
+    long value;
+    struct Cell* prevCell;
     int isInitialized;
 };
 
@@ -20,7 +19,7 @@ struct Sequence
     char* sequence;
 };
 
-void cleanup(struct Cell** table, int rows)
+void cleanup(struct Cell** table, size_t rows)
 {
     int i;
     if(!table)
@@ -45,13 +44,13 @@ void printTable(struct Cell** table, int rows, int columns)
     {
         for(j = 0; j < columns; j++)
         {
-            printf("(%2d %2d - %2d) ", i, j, table[i][j].value);
+            printf("(%2d %2ld - %2ld) ", i, j, table[i][j].value);
         }
         printf("\n");
     }
 }
 
-void initializeTable(int gapScore, struct Cell** table, int rows, int columns)
+void initializeTable(long gapScore, struct Cell** table, size_t rows, size_t columns)
 {
     int i;
     for(i = 0; i < rows; i++)
@@ -67,15 +66,15 @@ void initializeTable(int gapScore, struct Cell** table, int rows, int columns)
 }
 
 void calculateValue(char* str1, char* str2, struct Cell** table,
-        int str1Index, int str2Index, int matchScore, int mismatchScore, int gapScore)
+        size_t str1Index, size_t str2Index, long matchScore, long mismatchScore, long gapScore)
 {
-    int matchValue;
-    int firstStrGapValue;
-    int secondStrGapValue;
+    long matchValue;
+    long firstStrGapValue;
+    long secondStrGapValue;
 
     // Those vars are necessary because the table has another row and column
-    int tableRow = str1Index + 1;
-    int tableColumn = str2Index + 1;
+    size_t tableRow = str1Index + 1;
+    size_t tableColumn = str2Index + 1;
 
     if( str1Index < 0 || str2Index < 0 || table[tableRow][tableColumn].isInitialized)
     {
@@ -106,15 +105,13 @@ void calculateValue(char* str1, char* str2, struct Cell** table,
         if(matchValue > secondStrGapValue){
             // matchValue > firstStrGapValue, secondStrGapValue
             table[tableRow][tableColumn].value = matchValue;
-            table[tableRow][tableColumn].prevCellRow = tableRow - 1;
-            table[tableRow][tableColumn].prevCellColumn = tableColumn - 1;
+            table[tableRow][tableColumn].prevCell = &table[tableRow - 1][tableColumn - 1];
         }
         else
         {
             // secondStrGapValue > matchValue > firstStrGapValue
             table[tableRow][tableColumn].value = secondStrGapValue;
-            table[tableRow][tableColumn].prevCellRow = tableRow - 1;
-            table[tableRow][tableColumn].prevCellColumn = tableColumn;
+            table[tableRow][tableColumn].prevCell = &table[tableRow - 1][tableColumn]; // TODO check those cells
         }
     }
     else
@@ -123,15 +120,13 @@ void calculateValue(char* str1, char* str2, struct Cell** table,
         {
             // firstStrGapValue > matchValue, secondStrGapValue
             table[tableRow][tableColumn].value = firstStrGapValue;
-            table[tableRow][tableColumn].prevCellRow = tableRow - 1;
-            table[tableRow][tableColumn].prevCellColumn = tableColumn;
+            table[tableRow][tableColumn].prevCell = &table[tableRow ][tableColumn - 1];
         }
         else
         {
             // secondStrGapValue > firstStrGapValue > secondStrGapValue
             table[tableRow][tableColumn].value = secondStrGapValue;
-            table[tableRow][tableColumn].prevCellRow = tableRow - 1;
-            table[tableRow][tableColumn].prevCellColumn = tableColumn;
+            table[tableRow][tableColumn].prevCell = &table[tableRow - 1][tableColumn];
         }
     }
     table[tableRow][tableColumn].isInitialized = 1;
@@ -144,45 +139,42 @@ int readSequences(FILE* file, struct Sequence** sequencesPtr)
     int sequencesNumber;
     char *newlineIndex;
     char* sequenceString = NULL;
-    struct Sequence *newSequence;
 
     // TODO Check malloc/realloc results
 
     sequencesNumber = 0;
     while(fgets(line, MAX_LINE_SIZE, file) != NULL)
     {
-        if ((newlineIndex = strchr(line, '\r')) != NULL)
+        if ((newlineIndex = strchr(line, '\r')) != NULL || (newlineIndex = strchr(line, '\n')) != NULL)
         {
             *newlineIndex = '\0';
         }
-        if ((newlineIndex = strchr(line, '\n')) != NULL)
+        if (line[0] == '>') // TODO const
         {
-            *newlineIndex = '\0';
-        }
-        if (line[0] == '>')
-        {
-            if(!sequences)
+            if (sequencesNumber > 0)
             {
-                sequences = malloc(sizeof(struct Sequence)); // TODO const
+                sequences[sequencesNumber - 1].sequence = malloc(sizeof(sequenceString));
+                strcpy(sequences[sequencesNumber - 1].sequence, sequenceString);
+                free(sequenceString);
+                sequences = realloc(sequences, sizeof(sequences) + sizeof(struct Sequence));
             }
             else
             {
-                sequences = realloc(sequences, sizeof(sequences) + sizeof(struct Sequence));
+                sequences = malloc(sizeof(struct Sequence)); // TODO const
             }
-            newSequence = malloc(sizeof(struct Sequence));
-            newSequence->name = malloc(strlen(line));
-            strcpy(newSequence->name, line + 1);
-
-            newSequence->sequence = sequenceString;
-            sequences[sequencesNumber] = *newSequence;
-            sequenceString = NULL;
+            sequences[sequencesNumber].name = malloc(strlen(line));
+            strcpy(sequences[sequencesNumber].name, line + 1);
             sequencesNumber++;
+
+            sequenceString = NULL;
         }
         else
         {
             if (!sequenceString)
             {
-                sequenceString = line;
+                sequenceString = malloc(strlen(line) + 1);
+                strcpy(sequenceString, line);
+
             }
             else
             {
@@ -191,8 +183,29 @@ int readSequences(FILE* file, struct Sequence** sequencesPtr)
             }
         }
     }
+    if(!sequences)
+    {
+        return 0;
+    }
+    sequences[sequencesNumber - 1].sequence = malloc(sizeof(sequenceString));
+    strcpy(sequences[sequencesNumber - 1].sequence, sequenceString);
+    free(sequenceString);
     *sequencesPtr = sequences;
     return sequencesNumber;
+}
+
+
+long parseValue(char* arg)
+{
+    char* endPtr;
+    long value;
+    value = strtol(arg, &endPtr, 10);
+    if (endPtr == arg)
+    {
+        errno = EINVAL;
+        fprintf(stderr, "Invalid number %s!\n", arg); // TODO What error message?
+    }
+    return value;
 }
 
 int main(int argc, char *argv[]) {
@@ -205,15 +218,18 @@ int main(int argc, char *argv[]) {
     char* str1;
     char* str2;
 
-    int matchScore = 1;
-    int mismatchScore = -1;
-    int gapScore = -1;
+    long matchScore;
+    long mismatchScore;
+    long gapScore;
 
-    int str1Len;
-    int str2Len;
+    size_t str1Len;
+    size_t str2Len;
 
-    int rows;
-    int columns;
+    size_t rows;
+    size_t columns;
+
+    int row;
+    int column;
 
     struct Cell** scoreTable;
 
@@ -230,6 +246,22 @@ int main(int argc, char *argv[]) {
     if(!file)
     {
         fprintf(stderr, "Error opening file: %s\n", argv[1]);
+        return errno;
+    }
+
+    matchScore = parseValue(argv[2]);
+    if (errno)
+    {
+        return errno;
+    }
+    mismatchScore = parseValue(argv[3]);
+    if (errno)
+    {
+        return errno;
+    }
+    gapScore = parseValue(argv[4]);
+    if (errno)
+    {
         return errno;
     }
 
@@ -255,17 +287,17 @@ int main(int argc, char *argv[]) {
                 cleanup(scoreTable, rows);
                 return 1;
             }
-            for(i = 0; i < rows; i++)
+            for(row = 0; row < rows; row++)
             {
-                scoreTable[i] = malloc(sizeof(struct Cell) * columns);
-                if(!scoreTable[i])
+                scoreTable[row] = malloc(sizeof(struct Cell) * columns);
+                if(!scoreTable[row])
                 {
                     cleanup(scoreTable, rows);
                     return 1;
                 }
-                for(j = 0; j < columns; j++)
+                for(column = 0; column < columns; column++)
                 {
-                    scoreTable[i][j].isInitialized = 0;
+                    scoreTable[row][column].isInitialized = 0;
                 }
             }
 
@@ -273,7 +305,8 @@ int main(int argc, char *argv[]) {
 
             calculateValue(str1, str2, scoreTable, str1Len - 1, str2Len - 1, matchScore, mismatchScore, gapScore);
 
-            printf("Score for alignment of sequence %s to sequence %s is %d\n", sequences[i].name, sequences[j].name, scoreTable[str1Len][str2Len].value);
+            printf("Score for alignment of sequence %s to sequence %s is %ld\n",
+                    sequences[i].name, sequences[j].name, scoreTable[str1Len][str2Len].value);
 
             cleanup(scoreTable, str2Len + 1);
         }
