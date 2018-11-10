@@ -36,19 +36,6 @@ void cleanup(struct Cell** table, size_t rows)
     }
     free(table);
 }
-void printTable(struct Cell** table, int rows, int columns)
-{
-    // TODO Delete this function
-    int i, j;
-    for(i = 0; i < rows; i++)
-    {
-        for(j = 0; j < columns; j++)
-        {
-            printf("(%2d %2ld - %2ld) ", i, j, table[i][j].value);
-        }
-        printf("\n");
-    }
-}
 
 void initializeTable(long gapScore, struct Cell** table, size_t rows, size_t columns)
 {
@@ -135,6 +122,7 @@ void calculateValue(char* str1, char* str2, struct Cell** table,
 int readSequences(FILE* file, struct Sequence** sequencesPtr)
 {
     struct Sequence* sequences = NULL;
+    struct Sequence* newSequences = NULL;
     char line[MAX_LINE_SIZE];
     int sequencesNumber;
     char *newlineIndex;
@@ -156,7 +144,13 @@ int readSequences(FILE* file, struct Sequence** sequencesPtr)
                 sequences[sequencesNumber - 1].sequence = malloc(sizeof(sequenceString));
                 strcpy(sequences[sequencesNumber - 1].sequence, sequenceString);
                 free(sequenceString);
-                sequences = realloc(sequences, sizeof(sequences) + sizeof(struct Sequence));
+                newSequences = realloc(sequences, sizeof(struct Sequence) * (sequencesNumber + 1););
+                if (!newSequences)
+                {
+                    // TODO What now?
+                    return -1;
+                }
+                sequences = newSequences;
             }
             else
             {
