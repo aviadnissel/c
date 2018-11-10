@@ -300,6 +300,8 @@ int main(int argc, char *argv[]) {
     // TODO Get m, s, g from argv
     sequencesNumber = readSequences(file, &sequences);
 
+    fclose(file);
+    
     for(i = 0; i < sequencesNumber; i++)
     {
         for(j = i + 1; j < sequencesNumber; j++)
