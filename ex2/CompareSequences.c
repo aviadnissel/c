@@ -310,8 +310,7 @@ int main(int argc, char *argv[]) {
             str1Len = strlen(str1);
             str2Len = strlen(str2);
             rows = str1Len + 1;
-            columns = str2Len + 2; // TODO does it need to be 2?
-
+            columns = str2Len + 1;
 
             // TODO move to function
             scoreTable = createEmptyScoreTable(str1, str2, rows, columns);
@@ -328,7 +327,7 @@ int main(int argc, char *argv[]) {
             printf("Score for alignment of %s to %s is %ld\n",
                     sequences[i].name, sequences[j].name, scoreTable[str1Len][str2Len].value);
 
-            cleanupTable(scoreTable, str2Len + 1);
+            cleanupTable(scoreTable, rows);
         }
     }
     cleanupSequences(sequences, sequencesNumber); // TODO change name of var
