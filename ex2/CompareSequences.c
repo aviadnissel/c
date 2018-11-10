@@ -19,7 +19,7 @@ struct Sequence
     char* sequence;
 };
 
-void cleanup(struct Cell** table, size_t rows)
+void cleanupTable(struct Cell **table, size_t rows)
 {
     int i;
     if(!table)
@@ -37,6 +37,17 @@ void cleanup(struct Cell** table, size_t rows)
     free(table);
 }
 
+void cleanupSequences(struct Sequence* sequences, int numOfSequences)
+{
+    int i;
+    for(i = 0; i < numOfSequences; i++)
+    {
+        free(sequences[i].sequence);
+        free(sequences[i].name);
+    }
+    free(sequences);
+}
+
 struct Cell** createEmptyScoreTable(char* str1, char* str2, size_t rows, size_t columns)
 {
     struct Cell** scoreTable;
@@ -45,7 +56,7 @@ struct Cell** createEmptyScoreTable(char* str1, char* str2, size_t rows, size_t 
     scoreTable = malloc(sizeof(struct Cell*) * rows); // TODO make sizeof a var?
     if(!scoreTable)
     {
-        cleanup(scoreTable, rows);
+        cleanupTable(scoreTable, rows);
         return NULL;
     }
     for(row = 0; row < rows; row++)
@@ -53,7 +64,7 @@ struct Cell** createEmptyScoreTable(char* str1, char* str2, size_t rows, size_t 
         scoreTable[row] = malloc(sizeof(struct Cell) * columns);
         if(!scoreTable[row])
         {
-            cleanup(scoreTable, rows);
+            cleanupTable(scoreTable, rows);
             return NULL;
         }
         for(column = 0; column < columns; column++)
@@ -317,9 +328,8 @@ int main(int argc, char *argv[]) {
             printf("Score for alignment of %s to %s is %ld\n",
                     sequences[i].name, sequences[j].name, scoreTable[str1Len][str2Len].value);
 
-            cleanup(scoreTable, str2Len + 1);
+            cleanupTable(scoreTable, str2Len + 1);
         }
     }
-    free(sequences);
-
+    cleanupSequences(sequences, sequencesNumber); // TODO change name of var
 }
