@@ -299,7 +299,7 @@ int main(int argc, char *argv[]) {
 
             calculateValue(str1, str2, scoreTable, str1Len - 1, str2Len - 1, matchScore, mismatchScore, gapScore);
 
-            printf("Score for alignment of sequence %s to sequence %s is %ld\n",
+            printf("Score for alignment of %s to %s is %ld\n",
                     sequences[i].name, sequences[j].name, scoreTable[str1Len][str2Len].value);
 
             cleanup(scoreTable, str2Len + 1);
