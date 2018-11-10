@@ -37,6 +37,33 @@ void cleanup(struct Cell** table, size_t rows)
     free(table);
 }
 
+struct Cell** createEmptyScoreTable(char* str1, char* str2, size_t rows, size_t columns)
+{
+    struct Cell** scoreTable;
+    size_t row;
+    size_t column;
+    scoreTable = malloc(sizeof(struct Cell*) * rows); // TODO make sizeof a var?
+    if(!scoreTable)
+    {
+        cleanup(scoreTable, rows);
+        return NULL;
+    }
+    for(row = 0; row < rows; row++)
+    {
+        scoreTable[row] = malloc(sizeof(struct Cell) * columns);
+        if(!scoreTable[row])
+        {
+            cleanup(scoreTable, rows);
+            return NULL;
+        }
+        for(column = 0; column < columns; column++)
+        {
+            scoreTable[row][column].isInitialized = 0;
+        }
+    }
+    return scoreTable;
+}
+
 void initializeTable(long gapScore, struct Cell** table, size_t rows, size_t columns)
 {
     int i;
@@ -268,33 +295,21 @@ int main(int argc, char *argv[]) {
         {
             str1 = sequences[i].sequence;
             str2 = sequences[j].sequence;
-            // TODO put a loop over all combinations
+
             str1Len = strlen(str1);
-            rows = str1Len + 1;
             str2Len = strlen(str2);
-            columns = str2Len + 2;
+            rows = str1Len + 1;
+            columns = str2Len + 2; // TODO does it need to be 2?
+
 
             // TODO move to function
-            scoreTable = malloc(sizeof(struct Cell*) * rows); // TODO make sizeof a var?
+            scoreTable = createEmptyScoreTable(str1, str2, rows, columns);
+
             if(!scoreTable)
             {
-                cleanup(scoreTable, rows);
+                // TODO error message
                 return 1;
             }
-            for(row = 0; row < rows; row++)
-            {
-                scoreTable[row] = malloc(sizeof(struct Cell) * columns);
-                if(!scoreTable[row])
-                {
-                    cleanup(scoreTable, rows);
-                    return 1;
-                }
-                for(column = 0; column < columns; column++)
-                {
-                    scoreTable[row][column].isInitialized = 0;
-                }
-            }
-
             initializeTable(gapScore, scoreTable, rows, columns);
 
             calculateValue(str1, str2, scoreTable, str1Len - 1, str2Len - 1, matchScore, mismatchScore, gapScore);
