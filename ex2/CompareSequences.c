@@ -37,32 +37,6 @@ void cleanup(struct Cell** table, size_t rows)
     free(table);
 }
 
-struct Cell** createEmptyScoreTable(char* str1, char* str2, size_t rows, size_t columns)
-{
-    struct Cell** scoreTable;
-    size_t row;
-    size_t column;
-    scoreTable = malloc(sizeof(struct Cell*) * rows); // TODO make sizeof a var?
-    if(!scoreTable)
-    {
-        cleanup(scoreTable, rows);
-        return 1;
-    }
-    for(row = 0; row < rows; row++)
-    {
-        scoreTable[row] = malloc(sizeof(struct Cell) * columns);
-        if(!scoreTable[row])
-        {
-            cleanup(scoreTable, rows);
-            return NULL;
-        }
-        for(column = 0; column < columns; column++)
-        {
-            scoreTable[row][column].isInitialized = 0;
-        }
-    }
-    return scoreTable;
-}
 void initializeTable(long gapScore, struct Cell** table, size_t rows, size_t columns)
 {
     int i;
@@ -272,50 +246,55 @@ int main(int argc, char *argv[]) {
     matchScore = parseValue(argv[2]);
     if (errno)
     {
-        fprintf(stderr, "Error: while parsing argument %s\n", argv[2]);
         return errno;
     }
     mismatchScore = parseValue(argv[3]);
     if (errno)
     {
-        fprintf(stderr, "Error: while parsing argument %s\n", argv[3]);
         return errno;
     }
     gapScore = parseValue(argv[4]);
     if (errno)
     {
-        fprintf(stderr, "Error: while parsing argument %s\n", argv[4]);
         return errno;
     }
 
     // TODO Get m, s, g from argv
     sequencesNumber = readSequences(file, &sequences);
 
-    if(sequencesNumber == 0)
-    {
-        fprintf(stderr, "Error: no sequences found in file\n");
-        return 1;
-    }
     for(i = 0; i < sequencesNumber; i++)
     {
         for(j = i + 1; j < sequencesNumber; j++)
         {
             str1 = sequences[i].sequence;
             str2 = sequences[j].sequence;
-
+            // TODO put a loop over all combinations
             str1Len = strlen(str1);
             rows = str1Len + 1;
             str2Len = strlen(str2);
             columns = str2Len + 2;
 
             // TODO move to function
-            scoreTable = createEmptyScoreTable(str1, str2, rows, column);
-
+            scoreTable = malloc(sizeof(struct Cell*) * rows); // TODO make sizeof a var?
             if(!scoreTable)
             {
-                fprintf(stderr, "Error: while creating score table\n");
+                cleanup(scoreTable, rows);
                 return 1;
             }
+            for(row = 0; row < rows; row++)
+            {
+                scoreTable[row] = malloc(sizeof(struct Cell) * columns);
+                if(!scoreTable[row])
+                {
+                    cleanup(scoreTable, rows);
+                    return 1;
+                }
+                for(column = 0; column < columns; column++)
+                {
+                    scoreTable[row][column].isInitialized = 0;
+                }
+            }
+
             initializeTable(gapScore, scoreTable, rows, columns);
 
             calculateValue(str1, str2, scoreTable, str1Len - 1, str2Len - 1, matchScore, mismatchScore, gapScore);
