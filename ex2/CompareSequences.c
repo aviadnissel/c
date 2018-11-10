@@ -141,7 +141,7 @@ int readSequences(FILE* file, struct Sequence** sequencesPtr)
         {
             if (sequencesNumber > 0)
             {
-                sequences[sequencesNumber - 1].sequence = malloc(sizeof(sequenceString));
+                sequences[sequencesNumber - 1].sequence = malloc(strlen(sequenceString));
                 strcpy(sequences[sequencesNumber - 1].sequence, sequenceString);
                 free(sequenceString);
                 newSequences = realloc(sequences, sizeof(struct Sequence) * (sequencesNumber + 1));
@@ -181,7 +181,7 @@ int readSequences(FILE* file, struct Sequence** sequencesPtr)
     {
         return 0;
     }
-    sequences[sequencesNumber - 1].sequence = malloc(sizeof(sequenceString));
+    sequences[sequencesNumber - 1].sequence = malloc(strlen(sequenceString));
     strcpy(sequences[sequencesNumber - 1].sequence, sequenceString);
     free(sequenceString);
     *sequencesPtr = sequences;
