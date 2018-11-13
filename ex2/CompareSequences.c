@@ -5,11 +5,11 @@
 #include <errno.h>
 
 #define MAX_LINE_SIZE 200
+#define SEQUENCE_NAME_LINE_START '>'
 
 struct Cell
 {
 	long value;
-	struct Cell* prevCell;
 	int isInitialized;
 };
 
@@ -53,7 +53,7 @@ struct Cell** createEmptyScoreTable(size_t rows, size_t columns)
 	struct Cell** scoreTable;
 	size_t row;
 	size_t column;
-	scoreTable = malloc(sizeof(struct Cell*) * rows); // TODO make sizeof a var?
+	scoreTable = malloc(sizeof(struct Cell*) * rows);
 	if(!scoreTable)
 	{
 		cleanupTable(scoreTable, rows);
@@ -131,13 +131,11 @@ void calculateValue(char* str1, char* str2, struct Cell** table,
 		if(matchValue > secondStrGapValue){
 			// matchValue > firstStrGapValue, secondStrGapValue
 			table[tableRow][tableColumn].value = matchValue;
-			table[tableRow][tableColumn].prevCell = &table[tableRow - 1][tableColumn - 1];
 		}
 		else
 		{
 			// secondStrGapValue > matchValue > firstStrGapValue
 			table[tableRow][tableColumn].value = secondStrGapValue;
-			table[tableRow][tableColumn].prevCell = &table[tableRow - 1][tableColumn]; // TODO check those cells
 		}
 	}
 	else
@@ -146,13 +144,11 @@ void calculateValue(char* str1, char* str2, struct Cell** table,
 		{
 			// firstStrGapValue > matchValue, secondStrGapValue
 			table[tableRow][tableColumn].value = firstStrGapValue;
-			table[tableRow][tableColumn].prevCell = &table[tableRow ][tableColumn - 1];
 		}
 		else
 		{
 			// secondStrGapValue > firstStrGapValue > secondStrGapValue
 			table[tableRow][tableColumn].value = secondStrGapValue;
-			table[tableRow][tableColumn].prevCell = &table[tableRow - 1][tableColumn];
 		}
 	}
 	table[tableRow][tableColumn].isInitialized = 1;
@@ -163,41 +159,42 @@ int readSequences(FILE* file, struct Sequence** sequencesPtr)
 	struct Sequence* sequences = NULL;
 	struct Sequence* newSequences = NULL;
 	char line[MAX_LINE_SIZE];
-	int sequencesNumber;
+	int numOfSequences;
 	char *newlineIndex;
 	char* sequenceString = NULL;
 
-	// TODO Check malloc/realloc results
-
-	sequencesNumber = 0;
+	numOfSequences = 0;
 	while(fgets(line, MAX_LINE_SIZE, file) != NULL)
 	{
 		if ((newlineIndex = strchr(line, '\r')) != NULL || (newlineIndex = strchr(line, '\n')) != NULL)
 		{
 			*newlineIndex = '\0';
 		}
-		if (line[0] == '>') // TODO const
+		if (line[0] == SEQUENCE_NAME_LINE_START)
 		{
-			if (sequencesNumber > 0)
+			if (numOfSequences > 0)
 			{
-				sequences[sequencesNumber - 1].sequence = malloc(strlen(sequenceString) + 1);
-				strcpy(sequences[sequencesNumber - 1].sequence, sequenceString);
+				sequences[numOfSequences - 1].sequence = malloc(strlen(sequenceString) + 1);
+				strcpy(sequences[numOfSequences - 1].sequence, sequenceString);
 				free(sequenceString);
-				newSequences = realloc(sequences, sizeof(struct Sequence) * (sequencesNumber + 1));
+				newSequences = realloc(sequences, sizeof(struct Sequence) * (numOfSequences + 1));
 				if (!newSequences)
 				{
-					// TODO What now?
-					return -1;
+					return -ENOMEM;
 				}
 				sequences = newSequences;
 			}
 			else
 			{
-				sequences = malloc(sizeof(struct Sequence)); // TODO const
+				sequences = malloc(sizeof(struct Sequence));
+				if(!sequences)
+				{
+					return -ENOMEM;
+				}
 			}
-			sequences[sequencesNumber].name = malloc(strlen(line) + 1);
-			strcpy(sequences[sequencesNumber].name, line + 1);
-			sequencesNumber++;
+			sequences[numOfSequences].name = malloc(strlen(line) + 1);
+			strcpy(sequences[numOfSequences].name, line + 1);
+			numOfSequences++;
 
 			sequenceString = NULL;
 		}
@@ -206,25 +203,34 @@ int readSequences(FILE* file, struct Sequence** sequencesPtr)
 			if (!sequenceString)
 			{
 				sequenceString = malloc(strlen(line) + 1);
+				if(!sequenceString)
+				{
+					return -ENOMEM;
+				}
 				strcpy(sequenceString, line);
 
 			}
 			else
 			{
 				sequenceString = realloc(sequenceString, strlen(sequenceString) + strlen(line) + 1);
+				if(!sequenceString)
+				{
+					return -ENOMEM;
+				}
 				strcat(sequenceString, line);
 			}
 		}
 	}
 	if(!sequences)
 	{
+		*sequencesPtr = NULL;
 		return 0;
 	}
-	sequences[sequencesNumber - 1].sequence = malloc(strlen(sequenceString) + 1);
-	strcpy(sequences[sequencesNumber - 1].sequence, sequenceString);
+	sequences[numOfSequences - 1].sequence = malloc(strlen(sequenceString) + 1);
+	strcpy(sequences[numOfSequences - 1].sequence, sequenceString);
 	free(sequenceString);
 	*sequencesPtr = sequences;
-	return sequencesNumber;
+	return numOfSequences;
 }
 
 
@@ -236,7 +242,7 @@ long parseValue(char* arg)
 	if (endPtr == arg)
 	{
 		errno = EINVAL;
-		fprintf(stderr, "Invalid number %s!\n", arg); // TODO What error message?
+		fprintf(stderr, "ERROR: invalid number %s!\n", arg);
 	}
 	return value;
 }
@@ -245,7 +251,7 @@ int main(int argc, char *argv[]) {
 
 	FILE* file;
 	struct Sequence* sequences;
-	int sequencesNumber;
+	int numOfSequences;
 
 	char* str1;
 	char* str2;
@@ -274,7 +280,7 @@ int main(int argc, char *argv[]) {
 
 	if(!file)
 	{
-		fprintf(stderr, "Error opening file: %s\n", argv[1]);
+		fprintf(stderr, "ERROR opening file: %s\n", argv[1]);
 		return errno;
 	}
 
@@ -294,13 +300,19 @@ int main(int argc, char *argv[]) {
 		return errno;
 	}
 
-	sequencesNumber = readSequences(file, &sequences);
+	numOfSequences = readSequences(file, &sequences);
 
 	fclose(file);
 
-	for(i = 0; i < sequencesNumber; i++)
+	if(numOfSequences < 0)
 	{
-		for(j = i + 1; j < sequencesNumber; j++)
+		fprintf(stderr, "ERROR while reading sequences: %d\n", -numOfSequences);
+		return -numOfSequences;
+	}
+
+	for(i = 0; i < numOfSequences; i++)
+	{
+		for(j = i + 1; j < numOfSequences; j++)
 		{
 			str1 = sequences[i].sequence;
 			str2 = sequences[j].sequence;
@@ -310,12 +322,11 @@ int main(int argc, char *argv[]) {
 			rows = str1Len + 1;
 			columns = str2Len + 1;
 
-			// TODO move to function
 			scoreTable = createEmptyScoreTable(rows, columns);
 
 			if(!scoreTable)
 			{
-				// TODO error message
+				fprintf(stderr, "ERROR while creating table\n");
 				return 1;
 			}
 			initializeTable(gapScore, scoreTable, rows, columns);
@@ -328,5 +339,5 @@ int main(int argc, char *argv[]) {
 			cleanupTable(scoreTable, rows);
 		}
 	}
-	cleanupSequences(sequences, sequencesNumber); // TODO change name of var
+	cleanupSequences(sequences, numOfSequences);
 }
