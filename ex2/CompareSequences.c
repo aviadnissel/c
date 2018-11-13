@@ -21,7 +21,7 @@ struct Sequence
 
 void cleanupTable(struct Cell **table, size_t rows)
 {
-    int i;
+    size_t i;
     if(!table)
     {
         // table isn't allocated
@@ -48,7 +48,7 @@ void cleanupSequences(struct Sequence* sequences, int numOfSequences)
     free(sequences);
 }
 
-struct Cell** createEmptyScoreTable(char* str1, char* str2, size_t rows, size_t columns)
+struct Cell** createEmptyScoreTable(size_t rows, size_t columns)
 {
     struct Cell** scoreTable;
     size_t row;
@@ -77,7 +77,7 @@ struct Cell** createEmptyScoreTable(char* str1, char* str2, size_t rows, size_t 
 
 void initializeTable(long gapScore, struct Cell** table, size_t rows, size_t columns)
 {
-    int i;
+    size_t i;
     for(i = 0; i < rows; i++)
     {
         table[i][0].value = gapScore * i;
@@ -101,12 +101,13 @@ void calculateValue(char* str1, char* str2, struct Cell** table,
     size_t tableRow = str1Index + 1;
     size_t tableColumn = str2Index + 1;
 
-    if( str1Index < 0 || str2Index < 0 || table[tableRow][tableColumn].isInitialized)
+    if(table[tableRow][tableColumn].isInitialized)
     {
-        // str1Index or str2Index can't be negative, because we initialized the edges at the start
-        // but, just in case, we check it here
         return;
     }
+
+    // string indexes at this point are always larger than 0,
+    // because we assume the table is initialized by initializeTable
 
     calculateValue(str1, str2, table, str1Index - 1, str2Index - 1, matchScore, mismatchScore, gapScore);
     calculateValue(str1, str2, table, str1Index, str2Index - 1, matchScore, mismatchScore, gapScore);
@@ -243,7 +244,6 @@ long parseValue(char* arg)
 int main(int argc, char *argv[]) {
 
     FILE* file;
-    char line[MAX_LINE_SIZE];
     struct Sequence* sequences;
     int sequencesNumber;
 
@@ -259,9 +259,6 @@ int main(int argc, char *argv[]) {
 
     size_t rows;
     size_t columns;
-
-    int row;
-    int column;
 
     struct Cell** scoreTable;
 
@@ -314,7 +311,7 @@ int main(int argc, char *argv[]) {
             columns = str2Len + 1;
 
             // TODO move to function
-            scoreTable = createEmptyScoreTable(str1, str2, rows, columns);
+            scoreTable = createEmptyScoreTable(rows, columns);
 
             if(!scoreTable)
             {
