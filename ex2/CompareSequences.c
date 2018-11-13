@@ -1,24 +1,55 @@
+/**
+ * @file CompareSequences.c
+ * @author Aviad Nissel <aviad.nissel@mail.huji.ac.il>
+ *
+ * This program reads sequences from a given file
+ * and gives them comparision score.
+ */
+
+
+/* --- Includes --- */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <libgen.h>
 #include <errno.h>
 
+
+/* --- Constants --- */
+
+/** Maximum length of a single line. */
 #define MAX_LINE_SIZE 200
+
+/** How a sequence name line starts. */
 #define SEQUENCE_NAME_LINE_START '>'
 
+
+/* --- Structs --- */
+
+/** A single table cell. */
 struct Cell
 {
 	long value;
 	int isInitialized;
 };
 
+/** A sequence. */
 struct Sequence
 {
 	char* name;
 	char* sequence;
 };
 
+
+/* --- Functions --- */
+
+/**
+ * Frees the given table with given number of rows.
+ *
+ * @param table The table to free.
+ * @param rows How many rows are in the table.
+ */
 void cleanupTable(struct Cell **table, size_t rows)
 {
 	size_t i;
@@ -37,6 +68,12 @@ void cleanupTable(struct Cell **table, size_t rows)
 	free(table);
 }
 
+/**
+ * Frees all the sequences in the array.
+ *
+ * @param sequences The sequences to free.
+ * @param numOfSequences How many sequences are there.
+ */
 void cleanupSequences(struct Sequence* sequences, int numOfSequences)
 {
 	int i;
@@ -48,6 +85,13 @@ void cleanupSequences(struct Sequence* sequences, int numOfSequences)
 	free(sequences);
 }
 
+/**
+ * Creates an empty sequences table with given rows and columns.
+ *
+ * @param rows How many rows.
+ * @param columns How many columns.
+ * @return A pointer to the allocated table, needs to be free with cleanupTable.
+ */
 struct Cell** createEmptyScoreTable(size_t rows, size_t columns)
 {
 	struct Cell** scoreTable;
@@ -75,6 +119,14 @@ struct Cell** createEmptyScoreTable(size_t rows, size_t columns)
 	return scoreTable;
 }
 
+/**
+ * Initializes the given table with starting values.
+ *
+ * @param gapScore The gap score, used to initialize the cells.
+ * @param table The table to initialize.
+ * @param rows How many rows are in the table.
+ * @param columns How many columns are in the table.
+ */
 void initializeTable(long gapScore, struct Cell** table, size_t rows, size_t columns)
 {
 	size_t i;
@@ -90,6 +142,19 @@ void initializeTable(long gapScore, struct Cell** table, size_t rows, size_t col
 	}
 }
 
+/**
+ * Calculates the sequences comparision value.
+ * Fills up the table with the results.
+ *
+ * @param str1 The first sequence.
+ * @param str2  The second sequence.
+ * @param table The values table.
+ * @param str1Index What index are we calculating in the first string.
+ * @param str2Index What index are we calculating in the second string.
+ * @param matchScore The match score.
+ * @param mismatchScore The mismatch score.
+ * @param gapScore The gape score.
+ */
 void calculateValue(char* str1, char* str2, struct Cell** table,
 		size_t str1Index, size_t str2Index, long matchScore, long mismatchScore, long gapScore)
 {
@@ -154,6 +219,13 @@ void calculateValue(char* str1, char* str2, struct Cell** table,
 	table[tableRow][tableColumn].isInitialized = 1;
 }
 
+/**
+ * Reads the sequences from the given file.
+ * @param file The file to read from.
+ * @param sequencesPtr A pointer to a pointer of sequences.
+ *                     Used to return the array's pointer.
+ * @return How many sequences were read.
+ */
 int readSequences(FILE* file, struct Sequence** sequencesPtr)
 {
 	struct Sequence* sequences = NULL;
@@ -233,7 +305,12 @@ int readSequences(FILE* file, struct Sequence** sequencesPtr)
 	return numOfSequences;
 }
 
-
+/**
+ * Parses a value from the given string.
+ *
+ * @param arg The string to parse.
+ * @return The parsed value. In case of an error, returns 0 and sets errno.
+ */
 long parseValue(char* arg)
 {
 	char* endPtr;
@@ -247,6 +324,14 @@ long parseValue(char* arg)
 	return value;
 }
 
+/**
+ * The main function.
+ *
+ * @param argc the number of arguments.
+ * @param argv An array of strings, the arguments of the program.
+ * @return 0 in a succesful execution, 1 in case of file error,
+ *        other in case of a different error.
+ */
 int main(int argc, char *argv[]) {
 
 	FILE* file;
