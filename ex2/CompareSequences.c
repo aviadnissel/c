@@ -156,7 +156,7 @@ void initializeTable(long gapScore, struct Cell** table, size_t rows, size_t col
  * @param gapScore The gape score.
  */
 void calculateValue(char* str1, char* str2, struct Cell** table,
-		size_t str1Index, size_t str2Index, long matchScore, long mismatchScore, long gapScore)
+		    size_t str1Index, size_t str2Index, long matchScore, long mismatchScore, long gapScore)
 {
 	long matchValue;
 	long firstStrGapValue;
@@ -193,7 +193,8 @@ void calculateValue(char* str1, char* str2, struct Cell** table,
 
 	if(matchValue > firstStrGapValue)
 	{
-		if(matchValue > secondStrGapValue){
+		if(matchValue > secondStrGapValue)
+		{
 			// matchValue > firstStrGapValue, secondStrGapValue
 			table[tableRow][tableColumn].value = matchValue;
 		}
@@ -332,8 +333,8 @@ long parseValue(char* arg)
  * @return 0 in a succesful execution, 1 in case of file error,
  *		other in case of a different error.
  */
-int main(int argc, char *argv[]) {
-
+int main(int argc, char *argv[]) 
+{
 	FILE* file;
 	struct Sequence* sequences;
 	int numOfSequences;
