@@ -156,7 +156,7 @@ void initializeTable(long gapScore, struct Cell** table, size_t rows, size_t col
  * @param gapScore The gape score.
  */
 void calculateValue(char* str1, char* str2, struct Cell** table,
-		    size_t str1Index, size_t str2Index, long matchScore, long mismatchScore, long gapScore)
+                    size_t str1Index, size_t str2Index, long matchScore, long mismatchScore, long gapScore)
 {
 	long matchValue;
 	long firstStrGapValue;
