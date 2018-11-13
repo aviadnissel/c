@@ -223,7 +223,7 @@ void calculateValue(char* str1, char* str2, struct Cell** table,
  * Reads the sequences from the given file.
  * @param file The file to read from.
  * @param sequencesPtr A pointer to a pointer of sequences.
- *                     Used to return the array's pointer.
+ *			Used to return the array's pointer.
  * @return How many sequences were read.
  */
 int readSequences(FILE* file, struct Sequence** sequencesPtr)
@@ -330,7 +330,7 @@ long parseValue(char* arg)
  * @param argc the number of arguments.
  * @param argv An array of strings, the arguments of the program.
  * @return 0 in a succesful execution, 1 in case of file error,
- *        other in case of a different error.
+ *		other in case of a different error.
  */
 int main(int argc, char *argv[]) {
 
