@@ -77,6 +77,10 @@ void cleanupTable(struct Cell **table, size_t rows)
 void cleanupSequences(struct Sequence* sequences, int numOfSequences)
 {
 	int i;
+	if(!sequences)
+	{
+		return;
+	}
 	for(i = 0; i < numOfSequences; i++)
 	{
 		free(sequences[i].sequence);
@@ -235,6 +239,7 @@ int readSequences(FILE* file, struct Sequence** sequencesPtr)
 	int numOfSequences;
 	char *newlineIndex;
 	char* sequenceString = NULL;
+	char* newSequenceString = NULL;
 
 	numOfSequences = 0;
 	while(fgets(line, MAX_LINE_SIZE, file) != NULL)
@@ -253,6 +258,7 @@ int readSequences(FILE* file, struct Sequence** sequencesPtr)
 				newSequences = realloc(sequences, sizeof(struct Sequence) * (numOfSequences + 1));
 				if (!newSequences)
 				{
+					cleanupSequences(sequences, numOfSequences);
 					return -ENOMEM;
 				}
 				sequences = newSequences;
@@ -278,6 +284,7 @@ int readSequences(FILE* file, struct Sequence** sequencesPtr)
 				sequenceString = malloc(strlen(line) + 1);
 				if(!sequenceString)
 				{
+					cleanupSequences(sequences, numOfSequences);
 					return -ENOMEM;
 				}
 				strcpy(sequenceString, line);
@@ -285,11 +292,14 @@ int readSequences(FILE* file, struct Sequence** sequencesPtr)
 			}
 			else
 			{
-				sequenceString = realloc(sequenceString, strlen(sequenceString) + strlen(line) + 1);
-				if(!sequenceString)
+				newSequenceString = realloc(sequenceString, strlen(sequenceString) + strlen(line) + 1);
+				if(!newSequenceString)
 				{
+					free(sequenceString);
+					cleanupSequences(sequences, numOfSequences);
 					return -ENOMEM;
 				}
+				sequenceString = newSequenceString;
 				strcat(sequenceString, line);
 			}
 		}
