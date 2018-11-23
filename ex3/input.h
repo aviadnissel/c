@@ -1,5 +1,5 @@
-#ifndef CALCULATOR_H
-#define CALCULATOR_H
+#ifndef INPUT_H
+#define INPUT_H
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -12,7 +12,7 @@
 #define NUMBER_TYPE 0
 #define CHAR_TYPE 1
 
-struct Input // TODO rename
+struct Input
 {
     int type;
     int value;

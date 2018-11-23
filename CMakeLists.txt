@@ -4,4 +4,4 @@ project(c C)
 set(CMAKE_C_STANDARD 11)
 
 add_executable(c
-        ex3/Calculator2.c ex3/stack.c ex3/calculatorUtils.c)
+        ex3/calculator2.c ex3/stack.c ex3/calculatorUtils.c)

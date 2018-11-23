@@ -1,51 +1,10 @@
 
-#include "Calculator.h"
+#include "input.h"
 
 // TODO Add makefile
 
 
-int isChar(struct Input input)
-{
-    return input.type == CHAR_TYPE;
-}
 
-int isOperator(struct Input input)
-{
-    char c;
-    if (!isChar(input))
-    {
-        return 0;
-    }
-    c = (char) input.value;
-    return c == '^' || c == '+' || c == '-' || c == '*' || c == '/'; // TODO consts
-}
-
-int isRightParenthesis(struct Input input)
-{
-    char c;
-    if (!isChar(input))
-    {
-        return 0;
-    }
-    c = (char) input.value;
-    return c == '(';
-}
-
-int isLeftParenthesis(struct Input input)
-{
-    char c;
-    if (!isChar(input))
-    {
-        return 0;
-    }
-    c = (char) input.value;
-    return c == ')';
-}
-
-int isOperand(struct Input input)
-{
-    return input.type == NUMBER_TYPE;
-}
 
 int precedence(struct Input input)
 {
@@ -67,11 +26,6 @@ int precedence(struct Input input)
             return 3;
     }
     return 0;
-}
-
-int isSpace(char c)
-{
-    return c == ' ';
 }
 
 int stringToInputs(const char* str, size_t strLen, struct Input** inputsPtr)
