@@ -4,6 +4,10 @@
 #include "stack.h"
 #include "Calculator.h"
 
-struct Input popInput(struct stack* stack);
+struct Input popInput(struct Stack* stack);
+
+void pushInput(struct Stack* stack, struct Input input);
+
+struct Input peekInput(struct Stack* stack);
 
 #endif

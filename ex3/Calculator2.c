@@ -3,6 +3,7 @@
 
 // TODO Add makefile
 
+
 int isChar(struct Input input)
 {
     return input.type == CHAR_TYPE;
@@ -46,6 +47,33 @@ int isOperand(struct Input input)
     return input.type == NUMBER_TYPE;
 }
 
+int precedence(struct Input input)
+{
+    char op;
+    if(!isOperator(input))
+    {
+        return -1;
+    }
+    op = (char) input.value;
+    switch (op)
+    {
+        case '+':
+        case '-':
+            return 1;
+        case '*':
+        case '/':
+            return 2;
+        case '^':
+            return 3;
+    }
+    return 0;
+}
+
+int isSpace(char c)
+{
+    return c == ' ';
+}
+
 int stringToInputs(const char* str, size_t strLen, struct Input** inputsPtr)
 {
     struct Input* inputs;
@@ -83,18 +111,19 @@ int stringToInputs(const char* str, size_t strLen, struct Input** inputsPtr)
                 value = atoi(&c); // TODO do before if
             }
         }
-        else
-        {
-            if(middleOfNumber)
-            {
+        else {
+            if (middleOfNumber) {
                 inputs[inputsSize - 1].value = value;
                 middleOfNumber = 0;
                 value = 0;
             }
-            inputsSize++;
-            inputs = realloc(inputs, sizeof(struct Input) * inputsSize);
-            inputs[inputsSize - 1].type = CHAR_TYPE;
-            inputs[inputsSize - 1].value = c;
+            if (!isSpace(c))
+            {
+                inputsSize++;
+                inputs = realloc(inputs, sizeof(struct Input) * inputsSize);
+                inputs[inputsSize - 1].type = CHAR_TYPE;
+                inputs[inputsSize - 1].value = c;
+            }
         }
 
     }
@@ -116,7 +145,7 @@ int stringToInputs(const char* str, size_t strLen, struct Input** inputsPtr)
 
 int infixToPostfix(struct Input* infix, int infixSize, struct Input** postfixPtr)
 {
-    struct Input* postfix = *postfixPtr;
+    struct Input* postfix;
     int postfixLocation;
     int i;
     struct Input input;
@@ -125,65 +154,95 @@ int infixToPostfix(struct Input* infix, int infixSize, struct Input** postfixPtr
 
     stack = stackAlloc(sizeof(struct Input));
     postfixLocation = 0;
+    postfix = malloc(sizeof(struct Input));
 
     for(i = 0; i < infixSize; i++)
     {
         input = infix[i];
         if (isOperand(input))
         {
+            postfix = realloc(postfix, sizeof(struct Input) * postfixLocation + 1);
             postfix[postfixLocation] = input;
             postfixLocation++;
         }
-        if(isRightParenthesis(input)) // TODO func?
+        if(isRightParenthesis(input))
         {
             pushInput(stack, input);
         }
         if(isLeftParenthesis(input))
         {
-            while(!isEmptyStack(stack) && (stackData = pop(stack)) != '(')
+            while(!isEmptyStack(stack) && !isRightParenthesis(stackData = popInput(stack)))
             {
+                postfix = realloc(postfix, sizeof(struct Input) * postfixLocation + 1);
                 postfix[postfixLocation] = stackData;
                 postfixLocation++;
             }
         }
-        if(isOperator(c))
+        if(isOperator(input))
         {
-            if(isEmptyStack(stack) || peekChar(stack) == '(')
+            if(isEmptyStack(stack) || isRightParenthesis(peekInput(stack)))
             {
-                pushChar(stack, c);
+                pushInput(stack, input);
             }
             else
             {
-                while(!isEmptyStack(stack) && peekChar(stack) != '(' && precedence(peekChar(stack)) > precedence(c))
+                while(!isEmptyStack(stack) && !isRightParenthesis(peekInput(stack)) && precedence(peekInput(stack)) > precedence(input))
                 {
-                    postfix[postfixLocation] = popChar(stack);
+                    postfix = realloc(postfix, sizeof(struct Input) * postfixLocation + 1);
+                    postfix[postfixLocation] = popInput(stack);
                     postfixLocation++;
                 }
-                pushChar(stack, c);
+                pushInput(stack, input);
             }
         }
     }
 
     while(!isEmptyStack(stack))
     {
-        postfix[postfixLocation] = popChar(stack);
+        postfix = realloc(postfix, sizeof(struct Input) * postfixLocation + 1);
+        postfix[postfixLocation] = popInput(stack);
+        postfixLocation++;
+    }
+
+    if (postfixLocation == 0)
+    {
+        free(postfix);
         postfixLocation++;
     }
 
     freeStack(&stack);
+    *postfixPtr = postfix;
     return postfixLocation - 1;
 }
 
 int main(int argc, char *argv[])
 {
-    char *str = "7*(2+6)-54/3";
+    char *str = "7 * ( 2 + 6 ) - 15 / 3";
     size_t strLen = strlen(str);
     struct Input *inputs;
+    struct Input* postfixInputs;
     int inputsSize;
+    int postfixInputsSize;
     int i;
     struct Input curInput;
 
     inputsSize = stringToInputs(str, strLen, &inputs);
 
+    postfixInputsSize = infixToPostfix(inputs, inputsSize, &postfixInputs);
+
+    for(i = 0; i < postfixInputsSize + 1; i++)
+    {
+        curInput = postfixInputs[i];
+        if(isOperand(curInput))
+        {
+            printf("%d ", curInput.value);
+        }
+        else
+        {
+            printf("%c ", curInput.value);
+        }
+    }
+    printf("\n");
+    free(inputs);
 
 }
