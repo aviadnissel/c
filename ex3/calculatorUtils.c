@@ -63,8 +63,22 @@ int isOperand(struct Input input)
     return input.type == NUMBER_TYPE;
 }
 
-
 int isSpace(char c)
 {
     return c == ' ';
+}
+
+void printInputs(struct Input* inputs, int inputsSize)
+{
+    int i;
+    struct Input curInput;
+    for (i = 0; i < inputsSize; i++) {
+        curInput = inputs[i];
+        if (isOperand(curInput)) {
+            printf("%d ", curInput.value);
+        } else {
+            printf("%c ", curInput.value);
+        }
+    }
+    printf("\n");
 }

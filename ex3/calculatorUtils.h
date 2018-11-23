@@ -14,5 +14,6 @@ int isRightParenthesis(struct Input input);
 int isLeftParenthesis(struct Input input);
 int isOperand(struct Input input);
 int isSpace(char c);
+void printInputs(struct Input* inputs, int inputsSize);
 
 #endif

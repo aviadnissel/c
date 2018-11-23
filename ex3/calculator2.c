@@ -169,34 +169,29 @@ int infixToPostfix(struct Input* infix, int infixSize, struct Input** postfixPtr
     return postfixLocation - 1;
 }
 
-int main(int argc, char *argv[])
-{
-    char *str = "7 * ( 2 + 6 ) - 15 / 3";
-    size_t strLen = strlen(str);
+int main(int argc, char *argv[]) {
+    char str[101];
+    size_t strLen;
     struct Input *inputs;
-    struct Input* postfixInputs;
+    struct Input *postfixInputs;
     int inputsSize;
     int postfixInputsSize;
     int i;
     struct Input curInput;
 
-    inputsSize = stringToInputs(str, strLen, &inputs);
-
-    postfixInputsSize = infixToPostfix(inputs, inputsSize, &postfixInputs);
-
-    for(i = 0; i < postfixInputsSize + 1; i++)
+    while (scanf("%s", str) != EOF)
     {
-        curInput = postfixInputs[i];
-        if(isOperand(curInput))
-        {
-            printf("%d ", curInput.value);
-        }
-        else
-        {
-            printf("%c ", curInput.value);
-        }
-    }
-    printf("\n");
-    free(inputs);
+        strLen = strlen(str);
+        inputsSize = stringToInputs(str, strLen, &inputs);
 
+        printf("Infix: ");
+        printInputs(inputs, inputsSize + 1);
+
+        postfixInputsSize = infixToPostfix(inputs, inputsSize, &postfixInputs);
+
+        printf("Postfix: ");
+        printInputs(postfixInputs, postfixInputsSize + 1);
+
+        free(inputs);
+    }
 }
