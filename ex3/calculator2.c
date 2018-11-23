@@ -1,10 +1,8 @@
-
+#include <errno.h>
 #include "input.h"
+#include "calculatorUtils.h"
 
 // TODO Add makefile
-
-
-
 
 int precedence(struct Input input)
 {
@@ -31,6 +29,7 @@ int precedence(struct Input input)
 int stringToInputs(const char* str, size_t strLen, struct Input** inputsPtr)
 {
     struct Input* inputs;
+    struct Input* allocatedInputs;
     size_t i;
     int inputsSize;
     char c;
@@ -43,7 +42,10 @@ int stringToInputs(const char* str, size_t strLen, struct Input** inputsPtr)
 
     inputs = malloc(sizeof(struct Input));
 
-    // TODO check allocations
+    if(!inputs)
+    {
+        return -ENOMEM;
+    }
 
     for(i = 0; i < strLen; i++)
     {
@@ -60,7 +62,12 @@ int stringToInputs(const char* str, size_t strLen, struct Input** inputsPtr)
             {
                 middleOfNumber = 1;
                 inputsSize++;
-                inputs = realloc(inputs, sizeof(struct Input) * inputsSize);
+                allocatedInputs = realloc(inputs, sizeof(struct Input) * inputsSize);
+                if(!allocatedInputs)
+                {
+                    return -ENOMEM;
+                }
+                inputs = allocatedInputs;
                 inputs[inputsSize - 1].type = NUMBER_TYPE;
                 value = atoi(&c); // TODO do before if
             }
@@ -74,7 +81,12 @@ int stringToInputs(const char* str, size_t strLen, struct Input** inputsPtr)
             if (!isSpace(c))
             {
                 inputsSize++;
-                inputs = realloc(inputs, sizeof(struct Input) * inputsSize);
+                allocatedInputs = realloc(inputs, sizeof(struct Input) * inputsSize);
+                if(!allocatedInputs)
+                {
+                    return -ENOMEM;
+                }
+                inputs = allocatedInputs;
                 inputs[inputsSize - 1].type = CHAR_TYPE;
                 inputs[inputsSize - 1].value = c;
             }
@@ -161,16 +173,67 @@ int infixToPostfix(struct Input* infix, int infixSize, struct Input** postfixPtr
     if (postfixLocation == 0)
     {
         free(postfix);
-        postfixLocation++;
     }
 
     freeStack(&stack);
     *postfixPtr = postfix;
-    return postfixLocation - 1;
+    return postfixLocation;
 }
 
+int evaluate(int a, int b, char operator)
+{
+    switch (operator) {
+        case '+':
+            return b + a;
+        case '-':
+            return b - a;
+        case '*':
+            return b * a;
+        case '/':
+            return b / a;
+        case '^':
+            return (int) pow(b, a);
+        default:
+            return 0;
+    }
+}
+
+int calculate(struct Input* postfix, int postfixSize)
+{
+    int i;
+    struct Input input;
+    int val;
+    Stack* stack;
+    int a, b;
+    int res;
+
+    stack = stackAlloc(sizeof(int));
+
+    for(i = 0; i < postfixSize; i++)
+    {
+        input = postfix[i];
+        if(isOperand(input))
+        {
+            val = input.value;
+            push(stack, &val);
+        }
+        if(isOperator(input))
+        {
+            pop(stack, &a);
+            pop(stack, &b);
+            res = evaluate(a, b, (char) input.value);
+            push(stack, &res);
+        }
+    }
+    pop(stack, &res);
+    freeStack(&stack);
+
+    return res;
+}
+
+
 int main(int argc, char *argv[]) {
-    char str[101];
+    char str[101]; // TODO const
     size_t strLen;
     struct Input *inputs;
     struct Input *postfixInputs;
@@ -184,14 +247,30 @@ int main(int argc, char *argv[]) {
         strLen = strlen(str);
         inputsSize = stringToInputs(str, strLen, &inputs);
 
+        if(inputsSize < 0)
+        {
+            fprintf(stderr, "Error while converting string: %d\n", -inputsSize);
+            free(inputs);
+            free(postfixInputs);
+            exit(1);
+        }
         printf("Infix: ");
-        printInputs(inputs, inputsSize + 1);
+        printInputs(inputs, inputsSize);
 
         postfixInputsSize = infixToPostfix(inputs, inputsSize, &postfixInputs);
 
+        if(postfixInputsSize < 0)
+        {
+            fprintf(stderr, "Error while converting infix to postfix: %d\n", -postfixInputsSize);
+            free(inputs);
+            free(postfixInputs);
+            exit(1);
+        }
         printf("Postfix: ");
-        printInputs(postfixInputs, postfixInputsSize + 1);
+        printInputs(postfixInputs, postfixInputsSize);
 
+        printf("The value is %d\n", calculate(postfixInputs, postfixInputsSize));
         free(inputs);
+        free(postfixInputs);
     }
 }
