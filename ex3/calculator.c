@@ -265,8 +265,6 @@ int main(int argc, char *argv[]) {
     struct Input *postfixInputs;
     int inputsSize;
     int postfixInputsSize;
-    int i;
-    struct Input curInput;
 
     while (scanf("%s", str) != EOF)
     {
