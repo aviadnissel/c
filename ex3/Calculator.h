@@ -7,7 +7,7 @@
 #include <ctype.h>
 #include <string.h>
 #include "stack.h"
-#include "stackUtils.h"
+#include "calculatorUtils.h"
 
 #define NUMBER_TYPE 0
 #define CHAR_TYPE 1

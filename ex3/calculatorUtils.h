@@ -1,5 +1,5 @@
-#ifndef STACK_UTILS_H
-#define STACK_UTILS_H
+#ifndef CALCULATOR_UTILS_H
+#define CALCULATOR_UTILS_H
 
 #include "stack.h"
 #include "Calculator.h"

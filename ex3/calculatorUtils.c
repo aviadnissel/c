@@ -1,4 +1,4 @@
-#include "stackUtils.h"
+#include "calculatorUtils.h"
 
 struct Input popInput(struct Stack* stack)
 {
