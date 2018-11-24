@@ -294,7 +294,7 @@ int main(int argc, char *argv[]) {
         printf("Postfix: ");
         printInputs(postfixInputs, postfixInputsSize);
 
-        calculatedValue = calculate(postfixInputs, postfixInputsSize)
+        calculatedValue = calculate(postfixInputs, postfixInputsSize);
         printf("The value is %d\n", calculatedValue);
         free(inputs);
         free(postfixInputs);
