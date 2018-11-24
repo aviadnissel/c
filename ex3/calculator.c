@@ -133,7 +133,7 @@ int infixToPostfix(struct Input* infix, int infixSize, struct Input** postfixPtr
 		input = infix[i];
 		if (isOperand(input))
 		{
-			allocatedPostfix = realloc(postfix, sizeof(struct Input) * postfixLocation + 1);
+			allocatedPostfix = realloc(postfix, sizeof(struct Input) * (postfixLocation + 1));
 			if(!allocatedPostfix)
 			{
 				return -ENOMEM;
@@ -150,7 +150,7 @@ int infixToPostfix(struct Input* infix, int infixSize, struct Input** postfixPtr
 		{
 			while(!isEmptyStack(stack) && !isRightParenthesis(stackData = popInput(stack)))
 			{
-				allocatedPostfix = realloc(postfix, sizeof(struct Input) * postfixLocation + 1);
+				allocatedPostfix = realloc(postfix, sizeof(struct Input) * (postfixLocation + 1));
 				if(!allocatedPostfix)
 				{
 					return -ENOMEM;
@@ -170,7 +170,7 @@ int infixToPostfix(struct Input* infix, int infixSize, struct Input** postfixPtr
 			{
 				while(!isEmptyStack(stack) && !isRightParenthesis(peekInput(stack)) && precedence(peekInput(stack)) > precedence(input))
 				{
-					allocatedPostfix = realloc(postfix, sizeof(struct Input) * postfixLocation + 1);
+					allocatedPostfix = realloc(postfix, sizeof(struct Input) * (postfixLocation + 1));
 					if(!allocatedPostfix)
 					{
 						return -ENOMEM;
@@ -186,7 +186,7 @@ int infixToPostfix(struct Input* infix, int infixSize, struct Input** postfixPtr
 
 	while(!isEmptyStack(stack))
 	{
-		allocatedPostfix = realloc(postfix, sizeof(struct Input) * postfixLocation + 1);
+		allocatedPostfix = realloc(postfix, sizeof(struct Input) * (postfixLocation + 1));
 		if(!allocatedPostfix)
 		{
 			return -ENOMEM;
