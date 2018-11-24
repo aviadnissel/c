@@ -3,7 +3,7 @@
 #define MAXROW 5
 #define MAXCOL 24
 
-intmain()
+int main()
 
 {
 
@@ -11,6 +11,6 @@ intmain()
 
     p = (int (*) [MAXCOL])malloc(MAXROW *sizeof(*p));
 
-    return0;
+    return 0;
 
 }
