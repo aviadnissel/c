@@ -265,6 +265,7 @@ int main(int argc, char *argv[]) {
     struct Input *postfixInputs;
     int inputsSize;
     int postfixInputsSize;
+    int calculatedValue;
 
     while (scanf("%s", str) != EOF)
     {
@@ -293,7 +294,8 @@ int main(int argc, char *argv[]) {
         printf("Postfix: ");
         printInputs(postfixInputs, postfixInputsSize);
 
-        printf("The value is %d\n", calculate(postfixInputs, postfixInputsSize));
+        calculatedValue = calculate(postfixInputs, postfixInputsSize)
+        printf("The value is %d\n", calculatedValue);
         free(inputs);
         free(postfixInputs);
     }
