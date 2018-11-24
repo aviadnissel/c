@@ -168,7 +168,7 @@ int infixToPostfix(struct Input* infix, int infixSize, struct Input** postfixPtr
 			}
 			else
 			{
-				while(!isEmptyStack(stack) && !isRightParenthesis(peekInput(stack)) && precedence(peekInput(stack)) > precedence(input))
+				while(!isEmptyStack(stack) && !isRightParenthesis(peekInput(stack)) && precedence(peekInput(stack)) >= precedence(input))
 				{
 					allocatedPostfix = realloc(postfix, sizeof(struct Input) * (postfixLocation + 1));
 					if(!allocatedPostfix)
