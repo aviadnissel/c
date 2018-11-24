@@ -6,297 +6,298 @@
 
 int precedence(struct Input input)
 {
-    char op;
-    if(!isOperator(input))
-    {
-        return -1;
-    }
-    op = (char) input.value;
-    switch (op)
-    {
-        case '+':
-        case '-':
-            return 1;
-        case '*':
-        case '/':
-            return 2;
-        case '^':
-            return 3;
-    }
-    return 0;
+	char op;
+	if(!isOperator(input))
+	{
+		return -1;
+	}
+	op = (char) input.value;
+	switch (op)
+	{
+		case '+':
+		case '-':
+			return 1;
+		case '*':
+		case '/':
+			return 2;
+		case '^':
+			return 3;
+	}
+	return 0;
 }
 
 int stringToInputs(const char* str, size_t strLen, struct Input** inputsPtr)
 {
-    struct Input* inputs;
-    struct Input* allocatedInputs;
-    size_t i;
-    int inputsSize;
-    char c;
-    int value;
-    int middleOfNumber;
+	struct Input* inputs;
+	struct Input* allocatedInputs;
+	size_t i;
+	int inputsSize;
+	char c;
+	int value;
+	int middleOfNumber;
 
-    inputsSize = 0;
-    middleOfNumber = 0;
-    value = 0;
+	inputsSize = 0;
+	middleOfNumber = 0;
+	value = 0;
 
-    inputs = malloc(sizeof(struct Input));
+	inputs = malloc(sizeof(struct Input));
 
-    if(!inputs)
-    {
-        return -ENOMEM;
-    }
+	if(!inputs)
+	{
+		return -ENOMEM;
+	}
 
-    for(i = 0; i < strLen; i++)
-    {
+	for(i = 0; i < strLen; i++)
+	{
 
-        c = str[i];
-        if (isdigit(c))
-        {
-            if (middleOfNumber)
-            {
-                value *= 10;
-                value += atoi(&c); // This is allowed, since we know it's a digit
-            }
-            else
-            {
-                middleOfNumber = 1;
-                inputsSize++;
-                allocatedInputs = realloc(inputs, sizeof(struct Input) * inputsSize);
-                if(!allocatedInputs)
-                {
-                    return -ENOMEM;
-                }
-                inputs = allocatedInputs;
-                inputs[inputsSize - 1].type = NUMBER_TYPE;
-                value = atoi(&c); // TODO do before if
-            }
-        }
-        else {
-            if (middleOfNumber) {
-                inputs[inputsSize - 1].value = value;
-                middleOfNumber = 0;
-                value = 0;
-            }
-            if (!isSpace(c))
-            {
-                inputsSize++;
-                allocatedInputs = realloc(inputs, sizeof(struct Input) * inputsSize);
-                if(!allocatedInputs)
-                {
-                    return -ENOMEM;
-                }
-                inputs = allocatedInputs;
-                inputs[inputsSize - 1].type = CHAR_TYPE;
-                inputs[inputsSize - 1].value = c;
-            }
-        }
+		c = str[i];
+		if (isdigit(c))
+		{
+			if (middleOfNumber)
+			{
+				value *= 10;
+				value += atoi(&c); // This is allowed, since we know it's a digit
+			}
+			else
+			{
+				middleOfNumber = 1;
+				inputsSize++;
+				allocatedInputs = realloc(inputs, sizeof(struct Input) * inputsSize);
+				if(!allocatedInputs)
+				{
+					return -ENOMEM;
+				}
+				inputs = allocatedInputs;
+				inputs[inputsSize - 1].type = NUMBER_TYPE;
+				value = atoi(&c); // TODO do before if
+			}
+		}
+		else {
+			if (middleOfNumber) {
+				inputs[inputsSize - 1].value = value;
+				middleOfNumber = 0;
+				value = 0;
+			}
+			if (!isSpace(c))
+			{
+				inputsSize++;
+				allocatedInputs = realloc(inputs, sizeof(struct Input) * inputsSize);
+				if(!allocatedInputs)
+				{
+					return -ENOMEM;
+				}
+				inputs = allocatedInputs;
+				inputs[inputsSize - 1].type = CHAR_TYPE;
+				inputs[inputsSize - 1].value = c;
+			}
+		}
 
-    }
+	}
 
-    if(middleOfNumber)
-    {
-        inputs[inputsSize - 1].value = value;
-    }
+	if(middleOfNumber)
+	{
+		inputs[inputsSize - 1].value = value;
+	}
 
-    if (inputsSize == 0)
-    {
-        // No input was found
-        free(inputs);
-        inputs = NULL;
-    }
-    *inputsPtr = inputs;
-    return inputsSize;
+	if (inputsSize == 0)
+	{
+		// No input was found
+		free(inputs);
+		inputs = NULL;
+	}
+	*inputsPtr = inputs;
+	return inputsSize;
 }
 
 int infixToPostfix(struct Input* infix, int infixSize, struct Input** postfixPtr)
 {
-    struct Input* postfix;
-    struct Input* allocatedPostfix;
-    int postfixLocation;
-    int i;
-    struct Input input;
-    struct Input stackData;
-    Stack *stack;
+	struct Input* postfix;
+	struct Input* allocatedPostfix;
+	int postfixLocation;
+	int i;
+	struct Input input;
+	struct Input stackData;
+	Stack *stack;
 
-    stack = stackAlloc(sizeof(struct Input));
-    postfixLocation = 0;
-    postfix = malloc(sizeof(struct Input));
+	stack = stackAlloc(sizeof(struct Input));
+	postfixLocation = 0;
+	postfix = malloc(sizeof(struct Input));
 
-    if(!postfix)
-    {
-        return -ENOMEM;
-    }
+	if(!postfix)
+	{
+		return -ENOMEM;
+	}
 
-    for(i = 0; i < infixSize; i++)
-    {
-        input = infix[i];
-        if (isOperand(input))
-        {
-            allocatedPostfix = realloc(postfix, sizeof(struct Input) * postfixLocation + 1);
-            if(!allocatedPostfix)
-            {
-                return -ENOMEM;
-            }
-            postfix = allocatedPostfix;
-            postfix[postfixLocation] = input;
-            postfixLocation++;
-        }
-        if(isRightParenthesis(input))
-        {
-            pushInput(stack, input);
-        }
-        if(isLeftParenthesis(input))
-        {
-            while(!isEmptyStack(stack) && !isRightParenthesis(stackData = popInput(stack)))
-            {
-                allocatedPostfix = realloc(postfix, sizeof(struct Input) * postfixLocation + 1);
-                if(!allocatedPostfix)
-                {
-                    return -ENOMEM;
-                }
-                postfix = allocatedPostfix;
-                postfix[postfixLocation] = stackData;
-                postfixLocation++;
-            }
-        }
-        if(isOperator(input))
-        {
-            if(isEmptyStack(stack) || isRightParenthesis(peekInput(stack)))
-            {
-                pushInput(stack, input);
-            }
-            else
-            {
-                while(!isEmptyStack(stack) && !isRightParenthesis(peekInput(stack)) && precedence(peekInput(stack)) > precedence(input))
-                {
-                    allocatedPostfix = realloc(postfix, sizeof(struct Input) * postfixLocation + 1);
-                    if(!allocatedPostfix)
-                    {
-                        return -ENOMEM;
-                    }
-                    postfix = allocatedPostfix;
-                    postfix[postfixLocation] = popInput(stack);
-                    postfixLocation++;
-                }
-                pushInput(stack, input);
-            }
-        }
-    }
+	for(i = 0; i < infixSize; i++)
+	{
+		input = infix[i];
+		if (isOperand(input))
+		{
+			allocatedPostfix = realloc(postfix, sizeof(struct Input) * postfixLocation + 1);
+			if(!allocatedPostfix)
+			{
+				return -ENOMEM;
+			}
+			postfix = allocatedPostfix;
+			postfix[postfixLocation] = input;
+			postfixLocation++;
+		}
+		if(isRightParenthesis(input))
+		{
+			pushInput(stack, input);
+		}
+		if(isLeftParenthesis(input))
+		{
+			while(!isEmptyStack(stack) && !isRightParenthesis(stackData = popInput(stack)))
+			{
+				allocatedPostfix = realloc(postfix, sizeof(struct Input) * postfixLocation + 1);
+				if(!allocatedPostfix)
+				{
+					return -ENOMEM;
+				}
+				postfix = allocatedPostfix;
+				postfix[postfixLocation] = stackData;
+				postfixLocation++;
+			}
+		}
+		if(isOperator(input))
+		{
+			if(isEmptyStack(stack) || isRightParenthesis(peekInput(stack)))
+			{
+				pushInput(stack, input);
+			}
+			else
+			{
+				while(!isEmptyStack(stack) && !isRightParenthesis(peekInput(stack)) && precedence(peekInput(stack)) > precedence(input))
+				{
+					allocatedPostfix = realloc(postfix, sizeof(struct Input) * postfixLocation + 1);
+					if(!allocatedPostfix)
+					{
+						return -ENOMEM;
+					}
+					postfix = allocatedPostfix;
+					postfix[postfixLocation] = popInput(stack);
+					postfixLocation++;
+				}
+				pushInput(stack, input);
+			}
+		}
+	}
 
-    while(!isEmptyStack(stack))
-    {
-        allocatedPostfix = realloc(postfix, sizeof(struct Input) * postfixLocation + 1);
-        if(!allocatedPostfix)
-        {
-            return -ENOMEM;
-        }
-        postfix = allocatedPostfix;
-        postfix[postfixLocation] = popInput(stack);
-        postfixLocation++;
-    }
+	while(!isEmptyStack(stack))
+	{
+		allocatedPostfix = realloc(postfix, sizeof(struct Input) * postfixLocation + 1);
+		if(!allocatedPostfix)
+		{
+			return -ENOMEM;
+		}
+		postfix = allocatedPostfix;
+		postfix[postfixLocation] = popInput(stack);
+		postfixLocation++;
+	}
 
-    if (postfixLocation == 0)
-    {
-        free(postfix);
-    }
+	if (postfixLocation == 0)
+	{
+		free(postfix);
+	}
 
-    freeStack(&stack);
-    *postfixPtr = postfix;
-    return postfixLocation;
+	freeStack(&stack);
+	*postfixPtr = postfix;
+	return postfixLocation;
 }
 
 int evaluate(int a, int b, char operator)
 {
-    switch (operator) {
-        case '+':
-            return b + a;
-        case '-':
-            return b - a;
-        case '*':
-            return b * a;
-        case '/':
-            return b / a;
-        case '^':
-            return (int) pow(b, a);
-        default:
-            return 0;
-    }
+	switch (operator) {
+		case '+':
+			return b + a;
+		case '-':
+			return b - a;
+		case '*':
+			return b * a;
+		case '/':
+			return b / a;
+		case '^':
+			return (int) pow(b, a);
+		default:
+			return 0;
+	}
 }
 
 int calculate(struct Input* postfix, int postfixSize)
 {
-    int i;
-    struct Input input;
-    int val;
-    Stack* stack;
-    int a, b;
-    int res;
+	int i;
+	struct Input input;
+	int val;
+	Stack* stack;
+	int a, b;
+	int res;
 
-    stack = stackAlloc(sizeof(int));
+	stack = stackAlloc(sizeof(int));
+	val = 0;
 
-    for(i = 0; i < postfixSize; i++)
-    {
-        input = postfix[i];
-        if(isOperand(input))
-        {
-            val = input.value;
-            push(stack, &val);
-        }
-        if(isOperator(input))
-        {
-            pop(stack, &a);
-            pop(stack, &b);
-            res = evaluate(a, b, (char) input.value);
-            push(stack, &res);
-        }
-    }
-    pop(stack, &res);
-    freeStack(&stack);
+	for(i = 0; i < postfixSize; i++)
+	{
+		input = postfix[i];
+		if(isOperand(input))
+		{
+			val = input.value;
+			push(stack, &val);
+		}
+		if(isOperator(input))
+		{
+			pop(stack, &a);
+			pop(stack, &b);
+			res = evaluate(a, b, (char) input.value);
+			push(stack, &res);
+		}
+	}
+	pop(stack, &res);
+	freeStack(&stack);
 
-    return res;
+	return res;
 }
 
 
 int main(int argc, char *argv[]) {
-    char str[101]; // TODO const
-    size_t strLen;
-    struct Input *inputs;
-    struct Input *postfixInputs;
-    int inputsSize;
-    int postfixInputsSize;
-    int calculatedValue;
+	char str[101]; // TODO const
+	size_t strLen;
+	struct Input *inputs;
+	struct Input *postfixInputs;
+	int inputsSize;
+	int postfixInputsSize;
+	int calculatedValue;
 
-    while (scanf("%s", str) != EOF)
-    {
-        strLen = strlen(str);
-        inputsSize = stringToInputs(str, strLen, &inputs);
+	while (scanf("%s", str) != EOF)
+	{
+		strLen = strlen(str);
+		inputsSize = stringToInputs(str, strLen, &inputs);
 
-        if(inputsSize < 0)
-        {
-            fprintf(stderr, "Error while converting string: %d\n", -inputsSize);
-            free(inputs);
-            free(postfixInputs);
-            exit(1);
-        }
-        printf("Infix: ");
-        printInputs(inputs, inputsSize);
+		if(inputsSize < 0)
+		{
+			fprintf(stderr, "Error while converting string: %d\n", -inputsSize);
+			free(inputs);
+			free(postfixInputs);
+			exit(1);
+		}
+		printf("Infix: ");
+		printInputs(inputs, inputsSize);
 
-        postfixInputsSize = infixToPostfix(inputs, inputsSize, &postfixInputs);
+		postfixInputsSize = infixToPostfix(inputs, inputsSize, &postfixInputs);
 
-        if(postfixInputsSize < 0)
-        {
-            fprintf(stderr, "Error while converting infix to postfix: %d\n", -postfixInputsSize);
-            free(inputs);
-            free(postfixInputs);
-            exit(1);
-        }
-        printf("Postfix: ");
-        printInputs(postfixInputs, postfixInputsSize);
+		if(postfixInputsSize < 0)
+		{
+			fprintf(stderr, "Error while converting infix to postfix: %d\n", -postfixInputsSize);
+			free(inputs);
+			free(postfixInputs);
+			exit(1);
+		}
+		printf("Postfix: ");
+		printInputs(postfixInputs, postfixInputsSize);
 
-        calculatedValue = calculate(postfixInputs, postfixInputsSize);
-        printf("The value is %d\n", calculatedValue);
-        free(inputs);
-        free(postfixInputs);
-    }
+		calculatedValue = calculate(postfixInputs, postfixInputsSize);
+		printf("The value is %d\n", calculatedValue);
+		free(inputs);
+		free(postfixInputs);
+	}
 }
