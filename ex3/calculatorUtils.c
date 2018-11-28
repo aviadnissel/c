@@ -19,7 +19,7 @@ void pushInput(struct Stack* stack, struct Input input)
 	push(stack, &input);
 }
 
-struct Input peekInput(Stack* stack)
+struct Input peekInput(struct Stack* stack)
 {
 	struct Input headData;
 	headData = popInput(stack);

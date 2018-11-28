@@ -331,7 +331,8 @@ int calculate(struct Input* postfix, int postfixSize)
  * @param argv array of arguments.
  * @return 0 on success, else otherwise.
  */
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
 	char str[MAX_USER_INPUT_LENGTH];
 	struct Input *inputs;
 	struct Input *postfixInputs;
