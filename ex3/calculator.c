@@ -76,18 +76,15 @@ int stringToInputs(const char* str, size_t strLen, struct Input** inputsPtr)
 				middleOfNumber = 0;
 				value = 0;
 			}
-			if (!isSpace(c))
+			inputsSize++;
+			allocatedInputs = realloc(inputs, sizeof(struct Input) * inputsSize);
+			if(!allocatedInputs)
 			{
-				inputsSize++;
-				allocatedInputs = realloc(inputs, sizeof(struct Input) * inputsSize);
-				if(!allocatedInputs)
-				{
-					return -ENOMEM;
-				}
-				inputs = allocatedInputs;
-				inputs[inputsSize - 1].type = CHAR_TYPE;
-				inputs[inputsSize - 1].value = c;
+				return -ENOMEM;
 			}
+			inputs = allocatedInputs;
+			inputs[inputsSize - 1].type = CHAR_TYPE;
+			inputs[inputsSize - 1].value = c;
 		}
 
 	}

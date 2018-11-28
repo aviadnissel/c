@@ -63,11 +63,6 @@ int isOperand(struct Input input)
 	return input.type == NUMBER_TYPE;
 }
 
-int isSpace(char c)
-{
-	return c == ' ';
-}
-
 void printInputs(struct Input* inputs, int inputsSize)
 {
 	int i;
