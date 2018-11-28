@@ -33,7 +33,7 @@ int isOperator(struct Input input)
 		return 0;
 	}
 	c = (char) input.value;
-	return c == POW || c == ADD || c == SUB || c == MUL || c == DIV; // TODO consts
+	return c == POW || c == ADD || c == SUB || c == MUL || c == DIV;
 }
 
 int isRightParenthesis(struct Input input)

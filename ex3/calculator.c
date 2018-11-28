@@ -2,6 +2,8 @@
 #include "input.h"
 #include "calculatorUtils.h"
 
+#define MAX_INPUT_LENGTH 101
+
 int precedence(struct Input input)
 {
 	char op;
@@ -264,7 +266,7 @@ int calculate(struct Input* postfix, int postfixSize)
 
 
 int main(int argc, char *argv[]) {
-	char str[101]; // TODO const
+	char str[MAX_INPUT_LENGTH];
 	size_t strLen;
 	struct Input *inputs;
 	struct Input *postfixInputs;
