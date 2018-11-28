@@ -4,6 +4,21 @@
 #include "stack.h"
 #include "input.h"
 
+
+static const int PLUS = '+';
+
+static const int MINUS = '-';
+
+static const int MUL = '*';
+
+static const int DIV = '/';
+
+static const int POW = '^';
+
+static const int LEFT_PARENTHESIS = '(';
+
+static const int LEFT_PARENTHESIS = ')';
+
 struct Input popInput(struct Stack* stack);
 void pushInput(struct Stack* stack, struct Input input);
 struct Input peekInput(struct Stack* stack);

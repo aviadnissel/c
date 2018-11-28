@@ -2,6 +2,8 @@
 #include "input.h"
 #include "calculatorUtils.h"
 
+static const int MAX_INPUT_LEN = 101;
+
 int precedence(struct Input input)
 {
 	char op;
@@ -12,13 +14,13 @@ int precedence(struct Input input)
 	op = (char) input.value;
 	switch (op)
 	{
-		case '+':
-		case '-':
+		case PLUS:
+		case MINUS:
 			return 1;
-		case '*':
-		case '/':
+		case MUL:
+		case DIV:
 			return 2;
-		case '^':
+		case POW:
 			return 3;
 	}
 	return 0;
@@ -54,7 +56,6 @@ int stringToInputs(const char* str, size_t strLen, struct Input** inputsPtr)
 			if (middleOfNumber)
 			{
 				value *= 10;
-				value += atoi(&c); // This is allowed, since we know it's a digit
 			}
 			else
 			{
@@ -67,8 +68,9 @@ int stringToInputs(const char* str, size_t strLen, struct Input** inputsPtr)
 				}
 				inputs = allocatedInputs;
 				inputs[inputsSize - 1].type = NUMBER_TYPE;
-				value = atoi(&c); // TODO do before if
+				value = 0;
 			}
+			value += atoi(&c);// This is allowed, since we know it's a digit
 		}
 		else {
 			if (middleOfNumber) {
@@ -204,20 +206,20 @@ int infixToPostfix(struct Input* infix, int infixSize, struct Input** postfixPtr
 int evaluate(int a, int b, char operator)
 {
 	switch (operator) {
-		case '+':
+		case PLUS:
 			return b + a;
-		case '-':
+		case MINUS:
 			return b - a;
-		case '*':
+		case MUL:
 			return b * a;
-		case '/':
+		case DIV:
 			if (a == 0)
 			{
 				errno = EINVAL;
 				return 0;
 			}
 			return b / a;
-		case '^':
+		case POW:
 			return (int) pow(b, a);
 		default:
 			return 0;
@@ -264,7 +266,7 @@ int calculate(struct Input* postfix, int postfixSize)
 
 
 int main(int argc, char *argv[]) {
-	char str[101]; // TODO const
+	char str[MAX_INPUT_LEN];
 	size_t strLen;
 	struct Input *inputs;
 	struct Input *postfixInputs;
