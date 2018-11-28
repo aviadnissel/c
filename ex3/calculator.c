@@ -33,6 +33,7 @@ int stringToInputs(const char* str, size_t strLen, struct Input** inputsPtr)
 	size_t i;
 	int inputsSize;
 	char c;
+	char *endPtr;
 	int value;
 	int middleOfNumber;
 
@@ -70,7 +71,8 @@ int stringToInputs(const char* str, size_t strLen, struct Input** inputsPtr)
 				inputs[inputsSize - 1].type = NUMBER_TYPE;
 				value = 0;
 			}
-			value += atoi(&c); // This is allowed, since we know it's a digit
+			value += strtol(&c, &endPtr, 10);
+			// No need to check endPtr since we know it's a digit
 		}
 		else {
 			if (middleOfNumber) {
