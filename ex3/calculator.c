@@ -2,8 +2,6 @@
 #include "input.h"
 #include "calculatorUtils.h"
 
-#define DIVISION_BY_ZERO -1
-
 int precedence(struct Input input)
 {
 	char op;
@@ -218,7 +216,8 @@ int evaluate(int a, int b, char operator)
 		case '/':
 			if (a == 0)
 			{
-				return DIVISION_BY_ZERO;
+				errno = EINVAL;
+				return 0;
 			}
 			return b / a;
 		case '^':
@@ -252,10 +251,10 @@ int calculate(struct Input* postfix, int postfixSize)
 			pop(stack, &a);
 			pop(stack, &b);
 			res = evaluate(a, b, (char) input.value);
-			if (res < 0)
+			if (errno == EINVAL)
 			{
 				freeStack(&stack);
-				return DIVISION_BY_ZERO;
+				return 0;
 			}
 			push(stack, &res);
 		}
@@ -304,7 +303,7 @@ int main(int argc, char *argv[]) {
 		printInputs(postfixInputs, postfixInputsSize);
 
 		calculatedValue = calculate(postfixInputs, postfixInputsSize);
-		if (calculatedValue == DIVISION_BY_ZERO)
+		if (errno == EINVAL)
 		{
 			fprintf(stderr, "Error: Division by zero\n");
 		}
