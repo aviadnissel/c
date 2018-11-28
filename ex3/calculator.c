@@ -12,13 +12,13 @@ int precedence(struct Input input)
 	op = (char) input.value;
 	switch (op)
 	{
-		case '+':
-		case '-':
+		case ADD:
+		case SUB:
 			return 1;
-		case '*':
-		case '/':
+		case MUL:
+		case DIV:
 			return 2;
-		case '^':
+		case POW:
 			return 3;
 	}
 	return 0;
@@ -204,20 +204,20 @@ int infixToPostfix(struct Input* infix, int infixSize, struct Input** postfixPtr
 int evaluate(int a, int b, char operator)
 {
 	switch (operator) {
-		case '+':
+		case ADD:
 			return b + a;
-		case '-':
+		case SUB:
 			return b - a;
-		case '*':
+		case MUL:
 			return b * a;
-		case '/':
+		case DIV:
 			if (a == 0)
 			{
 				errno = EINVAL;
 				return 0;
 			}
 			return b / a;
-		case '^':
+		case POW:
 			return (int) pow(b, a);
 		default:
 			return 0;

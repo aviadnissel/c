@@ -4,6 +4,15 @@
 #include "stack.h"
 #include "input.h"
 
+#define ADD '+'
+#define SUB '-'
+#define MUL '*'
+#define DIV '/'
+#define POW '^'
+
+#define RIGHT_PARENTHESIS ')'
+#define LEFT_PARENTHESIS '('
+
 struct Input popInput(struct Stack* stack);
 void pushInput(struct Stack* stack, struct Input input);
 struct Input peekInput(struct Stack* stack);
