@@ -9,14 +9,7 @@
 
 /* --- Includes --- */
 
-#include <errno.h>
-#include "input.h"
-#include "calculatorUtils.h"
-
-
-/* --- Constants --- */
-
-#define MAX_INPUT_LENGTH 101
+#include "calculator.h"
 
 
 /* --- Functions --- */
@@ -330,7 +323,7 @@ int calculate(struct Input* postfix, int postfixSize)
 /* --- Main --- */
 
 int main(int argc, char *argv[]) {
-	char str[MAX_INPUT_LENGTH];
+	char str[MAX_USER_INPUT_LENGTH];
 	size_t strLen;
 	struct Input *inputs;
 	struct Input *postfixInputs;
