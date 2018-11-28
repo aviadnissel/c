@@ -12,7 +12,7 @@ typedef struct Node
 typedef struct Stack
 {
   Node * _top;
-  size_t _elementSize;	// we need that for memcpy
+  size_t _elementSize;    // we need that for memcpy
 } Stack;
 
 Stack* stackAlloc(size_t elementSize);

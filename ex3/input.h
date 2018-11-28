@@ -14,8 +14,8 @@
 
 struct Input
 {
-	int type;
-	int value;
+    int type;
+    int value;
 };
 
 #endif
