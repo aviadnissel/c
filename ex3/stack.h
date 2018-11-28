@@ -21,7 +21,9 @@ void freeStack(Stack** stack);
 
 void push(Stack* stack, void *data);
 
-void pop(Stack* stack,void *headData);
+void pop(Stack* stack, void *headData);
+
+void peek(Stack* stack, void *headData);
 
 int isEmptyStack(Stack* stack);
 
