@@ -49,7 +49,7 @@ int precedence(struct Input input)
  * @param inputsPtr a pointer to the returned array of Inputs.
  * @return The length of the converted Inputs, or 0 if none were converted.
  */
-int stringToInputs(const char* str, struct Input** inputsPtr)
+int stringToInfix(const char *str, struct Input **inputsPtr)
 {
 	size_t strLen;
 	struct Input* inputs;
@@ -137,6 +137,96 @@ int stringToInputs(const char* str, struct Input** inputsPtr)
 }
 
 /**
+ * Handles the postfix conversion in the case of an operand.
+ *
+ * @param input the current Input.
+ * @param postfixPtr a pointer to the postfix Input list, to which the new Inputs will be added.
+ * @param postfixIndex the current postfix index.
+ * @return the new postfix index.
+ */
+int handlePostfixOperand(struct Input input, struct Input **postfixPtr, int postfixIndex)
+{
+    struct Input *postfix = *postfixPtr;
+    struct Input *allocatedPostfix;
+    allocatedPostfix = realloc(postfix, sizeof(struct Input) * (postfixIndex + 1));
+    if(!allocatedPostfix)
+    {
+        return -ENOMEM;
+    }
+    postfix = allocatedPostfix;
+    postfix[postfixIndex] = input;
+    postfixIndex++;
+    *postfixPtr = postfix;
+    return postfixIndex;
+}
+
+/**
+ * Handles the postfix conversion in the case of left parenthesis.
+ *
+ * @param input the current Input.
+ * @param postfixPtr a pointer to the postfix Input list, to which the new Inputs will be added.
+ * @param postfixIndex the current postfix index.
+ * @return the new postfix index.
+ */
+int handlePostfixLeftParenthesis(struct Stack* stack, struct Input **postfixPtr, int postfixIndex)
+{
+    struct Input *postfix = *postfixPtr;
+    struct Input *allocatedPostfix;
+    struct Input stackData;
+    while(!isEmptyStack(stack) && !isRightParenthesis(stackData = popInput(stack)))
+    {
+        allocatedPostfix = realloc(postfix, sizeof(struct Input) * (postfixIndex + 1));
+        if(!allocatedPostfix)
+        {
+            return -ENOMEM;
+        }
+        postfix = allocatedPostfix;
+        postfix[postfixIndex] = stackData;
+        postfixIndex++;
+    }
+    *postfixPtr = postfix;
+    return postfixIndex;
+}
+
+/**
+ * Handles the postfix conversion in the case of an operator.
+ *
+ * @param input the current Input.
+ * @param postfixPtr a pointer to the postfix Input list, to which the new Inputs will be added.
+ * @param postfixIndex the current postfix index.
+ * @return the new postfix index.
+ */
+int handlePostfixOperator(struct Stack *stack, struct Input **postfixPtr,
+                          struct Input input, int postfixIndex)
+{
+    struct Input *allocatedPostfix;
+    struct Input *postfix = *postfixPtr;
+
+    if(isEmptyStack(stack) || isRightParenthesis(peekInput(stack)))
+    {
+        pushInput(stack, input);
+    }
+    else
+    {
+        while(!isEmptyStack(stack) && !isRightParenthesis(peekInput(stack)) &&
+              precedence(peekInput(stack)) >= precedence(input))
+        {
+            allocatedPostfix = realloc(postfix, sizeof(struct Input) * (postfixIndex + 1));
+            if (!allocatedPostfix)
+            {
+                return -ENOMEM;
+            }
+            postfix = allocatedPostfix;
+            postfix[postfixIndex] = popInput(stack);
+            postfixIndex++;
+        }
+        pushInput(stack, input);
+    }
+    *postfixPtr = postfix;
+    return postfixIndex;
+}
+
+/**
  * Converts given Inputs in infix order to a postfix order.
  *
  * @param infix the infix Inputs.
@@ -148,14 +238,13 @@ int infixToPostfix(struct Input* infix, int infixSize, struct Input** postfixPtr
 {
 	struct Input* postfix;
 	struct Input* allocatedPostfix;
-	int postfixLocation;
+	int postfixIndex;
 	int i;
 	struct Input input;
-	struct Input stackData;
 	Stack *stack;
 
 	stack = stackAlloc(sizeof(struct Input));
-	postfixLocation = 0;
+	postfixIndex = 0;
 	postfix = malloc(sizeof(struct Input));
 
 	if(!postfix)
@@ -168,14 +257,11 @@ int infixToPostfix(struct Input* infix, int infixSize, struct Input** postfixPtr
 		input = infix[i];
 		if (isOperand(input))
 		{
-			allocatedPostfix = realloc(postfix, sizeof(struct Input) * (postfixLocation + 1));
-			if(!allocatedPostfix)
-			{
-				return -ENOMEM;
-			}
-			postfix = allocatedPostfix;
-			postfix[postfixLocation] = input;
-			postfixLocation++;
+            postfixIndex = handlePostfixOperand(input, &postfix, postfixIndex);
+            if (postfixIndex < 0)
+            {
+                return postfixIndex;
+            }
 		}
 		if(isRightParenthesis(input))
 		{
@@ -183,63 +269,42 @@ int infixToPostfix(struct Input* infix, int infixSize, struct Input** postfixPtr
 		}
 		if(isLeftParenthesis(input))
 		{
-			while(!isEmptyStack(stack) && !isRightParenthesis(stackData = popInput(stack)))
-			{
-				allocatedPostfix = realloc(postfix, sizeof(struct Input) * (postfixLocation + 1));
-				if(!allocatedPostfix)
-				{
-					return -ENOMEM;
-				}
-				postfix = allocatedPostfix;
-				postfix[postfixLocation] = stackData;
-				postfixLocation++;
-			}
+		    postfixIndex = handlePostfixLeftParenthesis(stack, &postfix, postfixIndex);
+            if (postfixIndex < 0)
+            {
+                return postfixIndex;
+            }
 		}
 		if(isOperator(input))
 		{
-			if(isEmptyStack(stack) || isRightParenthesis(peekInput(stack)))
-			{
-				pushInput(stack, input);
-			}
-			else
-			{
-				while(!isEmptyStack(stack) && !isRightParenthesis(peekInput(stack)) &&
-					  precedence(peekInput(stack)) >= precedence(input))
-				{
-					allocatedPostfix = realloc(postfix, sizeof(struct Input) * (postfixLocation + 1));
-					if (!allocatedPostfix)
-					{
-						return -ENOMEM;
-					}
-					postfix = allocatedPostfix;
-					postfix[postfixLocation] = popInput(stack);
-					postfixLocation++;
-				}
-				pushInput(stack, input);
-			}
+		    postfixIndex = handlePostfixOperator(stack, &postfix, input, postfixIndex);
+		    if (postfixIndex < 0)
+            {
+		        return postfixIndex;
+            }
 		}
 	}
 
 	while(!isEmptyStack(stack))
 	{
-		allocatedPostfix = realloc(postfix, sizeof(struct Input) * (postfixLocation + 1));
+		allocatedPostfix = realloc(postfix, sizeof(struct Input) * (postfixIndex + 1));
 		if(!allocatedPostfix)
 		{
 			return -ENOMEM;
 		}
 		postfix = allocatedPostfix;
-		postfix[postfixLocation] = popInput(stack);
-		postfixLocation++;
+		postfix[postfixIndex] = popInput(stack);
+		postfixIndex++;
 	}
 
-	if (postfixLocation == 0)
+	if (postfixIndex == 0)
 	{
 		free(postfix);
 	}
 
 	freeStack(&stack);
 	*postfixPtr = postfix;
-	return postfixLocation;
+	return postfixIndex;
 }
 
 /**
@@ -342,7 +407,7 @@ int main(int argc, char *argv[])
 
 	while (scanf("%s", str) != EOF)
 	{
-		inputsSize = stringToInputs(str, &inputs);
+		inputsSize = stringToInfix(str, &inputs);
 
 		if(inputsSize < 0)
 		{
