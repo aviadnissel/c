@@ -17,18 +17,18 @@ void freeStack(Stack** stack)
   Node* p1;
   Node* p2;
   if (!(*stack == NULL))
-	{
-	  p1= (*stack)->_top;
-	  while(p1)
-	{
-	  p2= p1;
-	  p1= p1->_next;
-	  free(p2->_data);
-	  free(p2);
-	}
-	  free(*stack);
-	  *stack = NULL;
-	}
+  {
+    p1= (*stack)->_top;
+    while(p1)
+  {
+    p2= p1;
+    p1= p1->_next;
+    free(p2->_data);
+    free(p2);
+  }
+    free(*stack);
+    *stack = NULL;
+  }
 }
 
 void push(Stack* stack, void *data)
@@ -45,10 +45,10 @@ void pop(Stack* stack, void *headData)
 {
   assert(stack != NULL);
   if(stack->_top == NULL)
-	{
-	  fprintf(stderr, "The stack is empty\n");
-	  return;
-	}
+  {
+    fprintf(stderr, "The stack is empty\n");
+    return;
+  }
 
   Node *node = stack->_top;
   memcpy(headData, node->_data,stack->_elementSize);
