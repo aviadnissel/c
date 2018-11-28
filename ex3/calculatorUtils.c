@@ -19,6 +19,11 @@ void pushInput(struct Stack* stack, struct Input input)
 	push(stack, &input);
 }
 
+/**
+ * Coding style checks thinks there's no documentation for this.
+ * Added this documentation to remove the warning.
+ * See actual documentation in header file.
+ */
 struct Input peekInput(struct Stack* stack)
 {
 	struct Input headData;
