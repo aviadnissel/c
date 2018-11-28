@@ -324,7 +324,6 @@ int calculate(struct Input* postfix, int postfixSize)
 
 int main(int argc, char *argv[]) {
 	char str[MAX_USER_INPUT_LENGTH];
-	size_t strLen;
 	struct Input *inputs;
 	struct Input *postfixInputs;
 	int inputsSize;
@@ -333,8 +332,7 @@ int main(int argc, char *argv[]) {
 
 	while (scanf("%s", str) != EOF)
 	{
-		strLen = strlen(str);
-		inputsSize = stringToInputs(str, strLen, &inputs);
+		inputsSize = stringToInputs(str, &inputs);
 
 		if(inputsSize < 0)
 		{
