@@ -2,7 +2,7 @@
 #include "input.h"
 #include "calculatorUtils.h"
 
-static const int MAX_INPUT_LEN = 101;
+#define MAX_INPUT_LENGTH 101
 
 /**
  * Finds the precedence of a given input with an operator.
@@ -20,8 +20,8 @@ int precedence(struct Input input)
 	op = (char) input.value;
 	switch (op)
 	{
-		case PLUS:
-		case MINUS:
+		case ADD:
+		case SUB:
 			return 1;
 		case MUL:
 		case DIV:
@@ -47,6 +47,7 @@ int stringToInputs(const char* str, struct Input** inputsPtr)
 	size_t i;
 	int inputsSize;
 	char c;
+	char *endPtr;
 	int value;
 	int middleOfNumber;
 
@@ -86,7 +87,8 @@ int stringToInputs(const char* str, struct Input** inputsPtr)
 				inputs[inputsSize - 1].type = NUMBER_TYPE;
 				value = 0;
 			}
-			value += atoi(&c);// This is allowed, since we know it's a digit
+			value += strtol(&c, &endPtr, 10);
+			// No need to check endPtr since we know it's a digit
 		}
 		else
 		{
@@ -224,9 +226,9 @@ int infixToPostfix(struct Input* infix, int infixSize, struct Input** postfixPtr
 int evaluate(int a, int b, char operator)
 {
 	switch (operator) {
-		case PLUS:
+		case ADD:
 			return b + a;
-		case MINUS:
+		case SUB:
 			return b - a;
 		case MUL:
 			return b * a;
@@ -284,7 +286,7 @@ int calculate(struct Input* postfix, int postfixSize)
 
 
 int main(int argc, char *argv[]) {
-	char str[MAX_INPUT_LEN];
+	char str[MAX_INPUT_LENGTH];
 	size_t strLen;
 	struct Input *inputs;
 	struct Input *postfixInputs;

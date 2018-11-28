@@ -33,7 +33,7 @@ int isOperator(struct Input input)
 		return 0;
 	}
 	c = (char) input.value;
-	return c == POW || c == PLUS || c == MINUS || c == MUL || c == DIV;
+	return c == POW || c == ADD || c == SUB || c == MUL || c == DIV;
 }
 
 int isRightParenthesis(struct Input input)
@@ -44,7 +44,7 @@ int isRightParenthesis(struct Input input)
 		return 0;
 	}
 	c = (char) input.value;
-	return c == RIGHT_PARENTHESIS;
+	return c == LEFT_PARENTHESIS;
 }
 
 int isLeftParenthesis(struct Input input)
@@ -55,7 +55,7 @@ int isLeftParenthesis(struct Input input)
 		return 0;
 	}
 	c = (char) input.value;
-	return c == LEFT_PARENTHESIS;
+	return c == RIGHT_PARENTHESIS;
 }
 
 int isOperand(struct Input input)

@@ -4,20 +4,14 @@
 #include "stack.h"
 #include "input.h"
 
+#define ADD '+'
+#define SUB '-'
+#define MUL '*'
+#define DIV '/'
+#define POW '^'
 
-static const int PLUS = '+';
-
-static const int MINUS = '-';
-
-static const int MUL = '*';
-
-static const int DIV = '/';
-
-static const int POW = '^';
-
-static const int LEFT_PARENTHESIS = '(';
-
-static const int LEFT_PARENTHESIS = ')';
+#define RIGHT_PARENTHESIS ')'
+#define LEFT_PARENTHESIS '('
 
 struct Input popInput(struct Stack* stack);
 void pushInput(struct Stack* stack, struct Input input);
