@@ -75,7 +75,7 @@ void printInputs(struct Input* inputs, int inputsSize)
     for (i = 0; i < inputsSize; i++) {
         curInput = inputs[i];
         if (isOperand(curInput)) {
-            printf(" %d", curInput.value);
+            printf(" %d ", curInput.value);
         } else {
             printf("%c", curInput.value);
         }
