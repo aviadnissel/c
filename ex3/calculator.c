@@ -4,6 +4,12 @@
 
 static const int MAX_INPUT_LEN = 101;
 
+/**
+ * Finds the precedence of a given input with an operator.
+ *
+ * @param input an Input that should contain an operator.
+ * @return the precedence (higher comes first), -1 if input is not an operator.
+ */
 int precedence(struct Input input)
 {
 	char op;
@@ -26,8 +32,16 @@ int precedence(struct Input input)
 	return 0;
 }
 
-int stringToInputs(const char* str, size_t strLen, struct Input** inputsPtr)
+/**
+ * Converts the given string to an array of Inputs, in infix order.
+ *
+ * @param str the string to convert.
+ * @param inputsPtr a pointer to the returned array of Inputs.
+ * @return The length of the converted Inputs, or 0 if none were converted.
+ */
+int stringToInputs(const char* str, struct Input** inputsPtr)
 {
+	size_t strLen;
 	struct Input* inputs;
 	struct Input* allocatedInputs;
 	size_t i;
@@ -39,6 +53,8 @@ int stringToInputs(const char* str, size_t strLen, struct Input** inputsPtr)
 	inputsSize = 0;
 	middleOfNumber = 0;
 	value = 0;
+
+	strLen = strlen(str);
 
 	inputs = malloc(sizeof(struct Input));
 
@@ -72,7 +88,8 @@ int stringToInputs(const char* str, size_t strLen, struct Input** inputsPtr)
 			}
 			value += atoi(&c);// This is allowed, since we know it's a digit
 		}
-		else {
+		else
+		{
 			if (middleOfNumber) {
 				inputs[inputsSize - 1].value = value;
 				middleOfNumber = 0;
@@ -165,7 +182,8 @@ int infixToPostfix(struct Input* infix, int infixSize, struct Input** postfixPtr
 			}
 			else
 			{
-				while(!isEmptyStack(stack) && !isRightParenthesis(peekInput(stack)) && precedence(peekInput(stack)) >= precedence(input))
+				while(!isEmptyStack(stack) && !isRightParenthesis(peekInput(stack)) &&
+					  precedence(peekInput(stack)) >= precedence(input))
 				{
 					allocatedPostfix = realloc(postfix, sizeof(struct Input) * (postfixLocation + 1));
 					if(!allocatedPostfix)
