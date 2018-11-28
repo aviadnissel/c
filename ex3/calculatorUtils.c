@@ -1,3 +1,10 @@
+/**
+ * @file calculatrUtils.c
+ * @author Aviad Nissel <aviad.nissel@mail.huji.ac.il>
+ *
+ * Implementation for the calculator utils.
+ */
+
 #include "calculatorUtils.h"
 
 struct Input popInput(struct Stack* stack)

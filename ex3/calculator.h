@@ -1,3 +1,10 @@
+/**
+ * @file calculatr.h
+ * @author Aviad Nissel <aviad.nissel@mail.huji.ac.il>
+ *
+ * Header for the calculator program.
+ */
+
 #ifndef CALCULATOR_H
 #define CALCULATOR_H
 
