@@ -56,7 +56,6 @@ int stringToInputs(const char* str, size_t strLen, struct Input** inputsPtr)
 			if (middleOfNumber)
 			{
 				value *= 10;
-				value += atoi(&c); // This is allowed, since we know it's a digit
 			}
 			else
 			{
@@ -69,8 +68,9 @@ int stringToInputs(const char* str, size_t strLen, struct Input** inputsPtr)
 				}
 				inputs = allocatedInputs;
 				inputs[inputsSize - 1].type = NUMBER_TYPE;
-				value = atoi(&c); // TODO do before if
+				value = 0;
 			}
+			value += atoi(&c); // This is allowed, since we know it's a digit
 		}
 		else {
 			if (middleOfNumber) {
