@@ -1,8 +1,25 @@
+/**
+ * @file calculator.c
+ * @author Aviad Nissel <aviad.nissel@mail.huji.ac.il>
+ *
+ * Calculates a given mathematical expression by converting it to infix,
+ * to postfix, and then calculating the result.
+ */
+
+
+/* --- Includes --- */
+
 #include <errno.h>
 #include "input.h"
 #include "calculatorUtils.h"
 
+
+/* --- Constants --- */
+
 #define MAX_INPUT_LENGTH 101
+
+
+/* --- Functions --- */
 
 /**
  * Finds the precedence of a given input with an operator.
@@ -125,6 +142,14 @@ int stringToInputs(const char* str, struct Input** inputsPtr)
 	return inputsSize;
 }
 
+/**
+ * Converts given Inputs in infix order to a postfix order.
+ *
+ * @param infix the infix Inputs.
+ * @param infixSize the size of the infix Inputs array.
+ * @param postfixPtr a pointer to the returned array of inputs.
+ * @return the length  of the postfix array size, or 0 if none were converted.
+ */
 int infixToPostfix(struct Input* infix, int infixSize, struct Input** postfixPtr)
 {
 	struct Input* postfix;
@@ -223,6 +248,15 @@ int infixToPostfix(struct Input* infix, int infixSize, struct Input** postfixPtr
 	return postfixLocation;
 }
 
+/**
+ * Evaluates the given a operator b.
+ *
+ * @param a the first number.
+ * @param b the second number.
+ * @param operator the operator to use with a and b. Can be /+-*^.
+ * @return The result.
+ * 		   In case of division by zero, return 0 and sets errno to EINVAL.
+ */
 int evaluate(int a, int b, char operator)
 {
 	switch (operator) {
@@ -246,6 +280,14 @@ int evaluate(int a, int b, char operator)
 	}
 }
 
+/**
+ * Calculates the given Inputs with postfix order.
+ *
+ * @param postfix the Inputs array.
+ * @param postfixSize The Inputs array's size.
+ * @return the calculation result.
+ * 		   In case of division by zero, return 0 and sets errno to EINVAL.
+ */
 int calculate(struct Input* postfix, int postfixSize)
 {
 	int i;
@@ -284,6 +326,8 @@ int calculate(struct Input* postfix, int postfixSize)
 	return res;
 }
 
+
+/* --- Main --- */
 
 int main(int argc, char *argv[]) {
 	char str[MAX_INPUT_LENGTH];
