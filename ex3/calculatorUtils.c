@@ -74,11 +74,15 @@ void printInputs(struct Input* inputs, int inputsSize)
 {
 	int i;
 	struct Input curInput;
-	for (i = 0; i < inputsSize; i++) {
+	for (i = 0; i < inputsSize; i++)
+	{
 		curInput = inputs[i];
-		if (isOperand(curInput)) {
+		if (isOperand(curInput))
+		{
 			printf(" %d ", curInput.value);
-		} else {
+		}
+		else
+		{
 			printf("%c", curInput.value);
 		}
 	}

@@ -102,7 +102,8 @@ int stringToInputs(const char* str, struct Input** inputsPtr)
 		}
 		else
 		{
-			if (middleOfNumber) {
+			if (middleOfNumber)
+			{
 				inputs[inputsSize - 1].value = value;
 				middleOfNumber = 0;
 				value = 0;
@@ -206,7 +207,7 @@ int infixToPostfix(struct Input* infix, int infixSize, struct Input** postfixPtr
 					  precedence(peekInput(stack)) >= precedence(input))
 				{
 					allocatedPostfix = realloc(postfix, sizeof(struct Input) * (postfixLocation + 1));
-					if(!allocatedPostfix)
+					if (!allocatedPostfix)
 					{
 						return -ENOMEM;
 					}
@@ -252,7 +253,8 @@ int infixToPostfix(struct Input* infix, int infixSize, struct Input** postfixPtr
  */
 int evaluate(int a, int b, char operator)
 {
-	switch (operator) {
+	switch (operator)
+	{
 		case ADD:
 			return b + a;
 		case SUB:
@@ -322,6 +324,13 @@ int calculate(struct Input* postfix, int postfixSize)
 
 /* --- Main --- */
 
+/**
+ * Main function.
+ *
+ * @param argc number of arguments.
+ * @param argv array of arguments.
+ * @return 0 on success, else otherwise.
+ */
 int main(int argc, char *argv[]) {
 	char str[MAX_USER_INPUT_LENGTH];
 	struct Input *inputs;
@@ -360,6 +369,9 @@ int main(int argc, char *argv[]) {
 		if (errno == EINVAL)
 		{
 			fprintf(stderr, "Error: Division by zero\n");
+			free(inputs);
+			free(postfixInputs);
+			return 1;
 		}
 		else
 		{
