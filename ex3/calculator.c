@@ -216,10 +216,10 @@ int evaluate(int a, int b, char operator)
 		case '*':
 			return b * a;
 		case '/':
-		    if (a == 0)
-            {
-		        return DIVISION_BY_ZERO;
-            }
+			if (a == 0)
+			{
+				return DIVISION_BY_ZERO;
+			}
 			return b / a;
 		case '^':
 			return (int) pow(b, a);
@@ -253,10 +253,10 @@ int calculate(struct Input* postfix, int postfixSize)
 			pop(stack, &b);
 			res = evaluate(a, b, (char) input.value);
 			if (res < 0)
-            {
-			    freeStack(&stack);
-			    return DIVISION_BY_ZERO;
-            }
+			{
+				freeStack(&stack);
+				return DIVISION_BY_ZERO;
+			}
 			push(stack, &res);
 		}
 	}
@@ -305,12 +305,13 @@ int main(int argc, char *argv[]) {
 
 		calculatedValue = calculate(postfixInputs, postfixInputsSize);
 		if (calculatedValue == DIVISION_BY_ZERO)
-        {
-		    fprintf(stderr, "Error: Division by zero\n");
-        }
-        else {
-            printf("The value is %d\n", calculatedValue);
-        }
+		{
+			fprintf(stderr, "Error: Division by zero\n");
+		}
+		else
+		{
+			printf("The value is %d\n", calculatedValue);
+		}
 		free(inputs);
 		free(postfixInputs);
 	}
