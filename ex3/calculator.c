@@ -9,7 +9,15 @@
 
 /* --- Includes --- */
 
-#include "calculator.h"
+#include <errno.h>
+#include "input.h"
+#include "calculatorUtils.h"
+
+
+/* --- Constants ---*/
+
+/** The maximum input length from user. */
+#define MAX_USER_INPUT_LENGTH 101
 
 
 /* --- Functions --- */
