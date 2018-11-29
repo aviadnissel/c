@@ -1,5 +1,5 @@
 CC = gcc
-CCFLAGS = -c -Wall -Wvla
+CCFLAGS = -c -Wall -Wvla -Wextra -std=c99
 LDFLAGS = -lm
 
 
